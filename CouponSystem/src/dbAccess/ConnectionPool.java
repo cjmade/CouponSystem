@@ -5,8 +5,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashSet;
 
+import exceptions.ConnectionCloseException;
 import exceptions.GetConnectionWaitInterupted;
-
 
 public class ConnectionPool  {
 	// Singleton object
@@ -59,15 +59,26 @@ public class ConnectionPool  {
 		notifyAll();	
 	}
 	// Closes and returns all connection to the pool
-	public void closeAllConnections() throws InterruptedException, SQLException {
-
-		while(usedConnections.iterator().hasNext()){
-			usedConnections.iterator().next().close();
-		}
+	public void closeAllConnections() throws ConnectionCloseException {
+		// Close all free connections
 		while(newConnections.iterator().hasNext()){
-			newConnections.iterator().next().close();
+			try
+			{
+				newConnections.iterator().next().close();
+			}catch(SQLException e)
+			{
+				throw new ConnectionCloseException();
+			}
+		}
+		// Close all used connections
+		while(usedConnections.iterator().hasNext()){
+			try
+			{
+				usedConnections.iterator().next().close();
+			}catch(SQLException e)
+			{
+				throw new ConnectionCloseException();
+			}
 		}
 	}
-
-
 }
