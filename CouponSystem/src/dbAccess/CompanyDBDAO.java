@@ -20,7 +20,15 @@ public class CompanyDBDAO implements CompanyDAO {
 	@Override
 	public void createCompany(Company company) throws FailedToCreateCompanyException  {
 		// Get connection
-		Connection connection = pool.getConnection();
+		Connection connection;
+		try
+		{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e1)
+		{
+			//TODO
+			throw new ConnectionReceivedAfterWaiting();
+		}
 
 		// Prepare SQL message to insert new company
 		String insertSQL = "INSERT INTO APP.Company "

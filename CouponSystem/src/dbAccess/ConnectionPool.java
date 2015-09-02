@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.util.HashSet;
 
 import exceptions.ConnectionCloseException;
-import exceptions.GetConnectionWaitInterupted;
+import exceptions.GetConnectionWaitInteruptedException;
 
 public class ConnectionPool  {
 	// Singleton object
@@ -37,13 +37,13 @@ public class ConnectionPool  {
 		return pool;
 	}
 	// Returns a connection, as soon as there is at least one available
-	public  synchronized Connection getConnection() throws GetConnectionWaitInterupted {
+	public  synchronized Connection getConnection() throws GetConnectionWaitInteruptedException {
 		// While there are no available connections - wait
 		while (newConnections.iterator().hasNext()==false) {
 			try {
 				wait();
 			}catch (InterruptedException e) {
-				throw new GetConnectionWaitInterupted();
+				throw new GetConnectionWaitInteruptedException();
 			}
 		}
 		// If there is a connection available return it
