@@ -18,7 +18,7 @@ public class CompanyDBDAO implements CompanyDAO {
 	}
 	// Creates new company, with unique name
 	@Override
-	public void createCompany(Company company) throws FailedToCreateCompanyException  {
+	public void createCompany(Company company) throws  ConnectionReceivedAfterWaiting, FailedToCreateCompanyException {
 		// Get connection
 		Connection connection;
 		try
