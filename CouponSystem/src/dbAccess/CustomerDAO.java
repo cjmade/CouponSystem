@@ -1,22 +1,23 @@
 package dbAccess;
 
-import java.io.EOFException;
-import java.sql.SQLException;
+
 import java.util.Collection;
 
-import exceptions.ObjectAlreadyExistException;
-import exceptions.ObjectDontExistException;
+import exceptions.ClosedConnectionStatementCreationException;
+import exceptions.ConnectionCloseException;
+import exceptions.ConnectionReceivedAfterWaiting;
+import exceptions.FailedToCreateCustomerException;
 import objects.Coupon;
 import objects.Customer;
 
 
 public interface CustomerDAO {
 
-	 void createCustomer(Customer customer) throws SQLException, ObjectAlreadyExistException, Exception;
-	 void removeCustomer(Customer customer) throws SQLException, ObjectDontExistException, Exception;
-	 void updateCustomer(Customer customer) throws SQLException, ObjectDontExistException, Exception;
-	 Customer getCustomer(long id) throws SQLException, ObjectDontExistException, Exception;
-	 Collection<Customer> getAllCustomers() throws SQLException, Exception;
-	 Collection<Coupon> getCoupons(Customer customer) throws SQLException, Exception;
-	 boolean login(String custName,String password) throws SQLException, EOFException, Exception;
+	 void createCustomer(Customer customer) throws ConnectionReceivedAfterWaiting, FailedToCreateCustomerException, ConnectionCloseException;
+	 void removeCustomer(Customer customer) throws ConnectionReceivedAfterWaiting, ClosedConnectionStatementCreationException, ConnectionCloseException;
+	 void updateCustomer(Customer customer) throws ConnectionReceivedAfterWaiting, ClosedConnectionStatementCreationException, ConnectionCloseException;
+	 Customer getCustomer(long id) throws ConnectionReceivedAfterWaiting, ClosedConnectionStatementCreationException, ConnectionCloseException;
+	 Collection<Customer> getAllCustomers() throws ConnectionReceivedAfterWaiting, ClosedConnectionStatementCreationException, ConnectionCloseException;
+	 Collection<Coupon> getCoupons(Customer customer) throws ConnectionReceivedAfterWaiting, ClosedConnectionStatementCreationException, ConnectionCloseException;
+	 boolean login(String custName,String password) throws ConnectionReceivedAfterWaiting, ClosedConnectionStatementCreationException, ConnectionCloseException;
 }

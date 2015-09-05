@@ -3,6 +3,7 @@ package dbAccess;
 import objects.*;
 import exceptions.*;
 
+import java.nio.channels.ClosedChannelException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,219 +16,347 @@ public class CustomerDBDAO implements CustomerDAO
 {
 	// Connection attributes
 	ConnectionPool pool = ConnectionPool.getInstance();
-	
 	// Constructor, throws SQLException, on failed connection attempt
 	public CustomerDBDAO() throws SQLException
 	{	}
 	// Creates new Customer from the passed object Customer
 	@Override
-	public void createCustomer(Customer customer) throws Exception
+	public void createCustomer(Customer customer) throws ConnectionReceivedAfterWaiting, 
+		FailedToCreateCustomerException, ConnectionCloseException
 	{
 		// DB Connection
-		Connection connection = pool.getConnection();
+		Connection connection;
+		try	{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e)	{
+			throw new ConnectionReceivedAfterWaiting();
+		}
 		// Prepare SQL message to insert new company
 		String insertSQL = "INSERT INTO APP.CUSTOMER " + "(PASSWORD, COMP_NAME) VALUES" + "(?,?)";
-		PreparedStatement preparedStatement = connection.prepareStatement(insertSQL);
-		preparedStatement.setString(2, customer.getCustName());
-		preparedStatement.setString(1, customer.getPassword());
-		// Execute prepared Statement
-		preparedStatement.executeUpdate();
-		// LOG
-		System.out.println(customer.toString() + " was added to the table");
+		PreparedStatement preparedStatement;
+		// Prepare statement and update 
+		try	{
+			preparedStatement = connection.prepareStatement(insertSQL);
+			preparedStatement.setString(2, customer.getCustName());
+			preparedStatement.setString(1, customer.getPassword());
+			// Execute prepared Statement
+			preparedStatement.executeUpdate();
+			// LOG
+			System.out.println(customer.toString() + " was added to the table");
+		}catch(SQLException e)	{
+			throw new FailedToCreateCustomerException();
+		}
 		// Close connections
-		preparedStatement.close();
+		try	{
+			preparedStatement.close();
+		}catch(SQLException e)	{
+			throw new ConnectionCloseException();
+		}
 		pool.returnConnection(connection);
 	}
 	// Remove Customer from the table
 	@Override
-	public void removeCustomer(Customer customer) throws Exception
+	public void removeCustomer(Customer customer) throws ConnectionReceivedAfterWaiting, 
+		ClosedConnectionStatementCreationException, ConnectionCloseException
 	{
 		// DB Connection
-		Connection connection = pool.getConnection();
+		Connection connection;
+		try	{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e)	{
+			throw new ConnectionReceivedAfterWaiting();
+		}
 		// Get customer ID from DB
 		String sqlRequest = "SELECT ID FROM APP.CUSTOMER WHERE CUST_NAME='" + customer.getCustName() + "'";
-		Statement statement = connection.createStatement();
-		ResultSet idFound = statement.executeQuery(sqlRequest);
-		idFound.next();
-		customer.setId(idFound.getLong("ID"));
-		// Prepare message to remove purchase history
-		sqlRequest = "DELETE FROM APP.CUSTOMER_COUPON WHERE CUST_ID =" + customer.getId();
-		// Remove all customer purchase history
-		statement.execute(sqlRequest);
-		// Prepare SQL message to remove the customer
-		sqlRequest = "DELETE FROM APP.CUSTOMER WHERE ID=" + customer.getId();
-		// Remove the customer
-		statement.execute(sqlRequest);
-		// LOG
-		System.out.println("Customer " + customer.toString() + " was deleted");
+		Statement statement;
+		ResultSet idFound;
+		try	{
+			statement = connection.createStatement();
+			idFound = statement.executeQuery(sqlRequest);
+			idFound.next();
+			customer.setId(idFound.getLong("ID"));
+			// Prepare message to remove purchase history
+			sqlRequest = "DELETE FROM APP.CUSTOMER_COUPON WHERE CUST_ID =" + customer.getId();
+			// Remove all customer purchase history
+			statement.execute(sqlRequest);
+			// Prepare SQL message to remove the customer
+			sqlRequest = "DELETE FROM APP.CUSTOMER WHERE ID=" + customer.getId();
+			// Remove the customer
+			statement.execute(sqlRequest);
+			// LOG
+			System.out.println("Customer " + customer.toString() + " was deleted");
+		}catch(SQLException e)	{
+			throw new ClosedConnectionStatementCreationException();
+		}
 		// Close connections
-		statement.close();
+		try	{
+			statement.close();
+		}catch(SQLException e)	{
+			throw new ConnectionCloseException();
+		}
 		pool.returnConnection(connection);
 	}
 	// Update existing customer info BY ID
 	@Override
-	public void updateCustomer(Customer customer) throws Exception
+	public void updateCustomer(Customer customer) throws ConnectionReceivedAfterWaiting,
+		ClosedConnectionStatementCreationException, ConnectionCloseException
 	{
 		// DB Connection
-		Connection connection = pool.getConnection();
-		Statement statement = connection.createStatement();
-		// Check that customer with that name exists
-		if(!statement.execute("SELECT CUST_NAME FROM APP.CUSTOMER WHERE CUST_NAME = '" + customer.getCustName() + "'"))
-		{
-			//If such customer does not exist
-			// Close connections
-			statement.close();
-			pool.returnConnection(connection);
-			// Throw exception
-			throw new ObjectDontExistException();
+		Connection connection;
+		try	{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e)	{
+			throw new ConnectionReceivedAfterWaiting();
 		}
+		// Prepare and execute statement
+		Statement statement;
 		// Prepare SQL message to remove the customer
-		String updateSQL = "UPDATE APP.CUSTOMER SET " 
-				+ "CUST_NAME='" + customer.getCustName() 
-				+ "' ,PASSWORD='" + customer.getPassword() 
-				+ "' WHERE ID=" + customer.getId();
-		// Remove the customer himself
-		statement.execute(updateSQL);
-		// LOG
-		System.out.println("Customer " + customer.toString() + " was updated");
+		String updateSQL;
+		// Update the customer
+		try	{
+			statement = connection.createStatement();
+			updateSQL = "UPDATE APP.CUSTOMER SET " 
+					+ "CUST_NAME='" + customer.getCustName() 
+					+ "' ,PASSWORD='" + customer.getPassword() 
+					+ "' WHERE ID=" + customer.getId();
+			statement.execute(updateSQL);
+			// LOG
+			System.out.println("Customer " + customer.toString() + " was updated");
+		}catch(SQLException e)	{
+			throw new ClosedConnectionStatementCreationException();
+		}
 		// Close connections
-		statement.close();
+		try	{
+			statement.close();
+		}catch(SQLException e)	{
+			throw new ConnectionCloseException();
+		}
 		pool.returnConnection(connection);
 	}
 	// Purchase coupon
-	public void purchaseCoupon(Customer customer, Coupon coupon) throws Exception
+	public void purchaseCoupon(Customer customer, Coupon coupon) throws ConnectionReceivedAfterWaiting, 
+		ClosedConnectionStatementCreationException, ConnectionCloseException
 	{
 		// DB Connection
-		Connection connection = pool.getConnection();
+		Connection connection;
+		try	{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e)	{
+			throw new ConnectionReceivedAfterWaiting();
+		}
 		// Prepare SQL message to insert new company
 		String insertSQL = "INSERT INTO APP.CUSTOMER_COUPON " + "(CUST_ID, COUPON_ID) VALUES" + "(?,?)";
-		PreparedStatement preparedStatement = connection.prepareStatement(insertSQL);
-		preparedStatement.setLong(1, customer.getId());
-		preparedStatement.setLong(2, coupon.getId());
-		// Execute prepared Statement
-		preparedStatement.executeUpdate();
+		PreparedStatement preparedStatement;
+		try	{
+			preparedStatement = connection.prepareStatement(insertSQL);
+			preparedStatement.setLong(1, customer.getId());
+			preparedStatement.setLong(2, coupon.getId());
+			// Execute prepared Statement
+			preparedStatement.executeUpdate();
+		}catch(SQLException e)	{
+			throw new ClosedConnectionStatementCreationException();
+		}
 		// Close connections
-		preparedStatement.close();
+		try	{
+			preparedStatement.close();
+		}catch(SQLException e)	{
+			throw new ConnectionCloseException();
+		}
 		pool.returnConnection(connection);
 	}
 	// Finds and returns customer from DB by ID
 	@Override
-	public Customer getCustomer(long id) throws Exception
+	public Customer getCustomer(long id) throws ConnectionReceivedAfterWaiting, 
+		ClosedConnectionStatementCreationException, ConnectionCloseException
 	{
 		// DB Connection
-		Connection connection = pool.getConnection();
-		Statement statement = connection.createStatement();
+		Connection connection;
+		try	{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e)	{
+			throw new ConnectionReceivedAfterWaiting();
+		}
+		// Prepare and execute statement
+		Statement statement;
 		// Create new customer to store what will be found
-		Customer customerFound = new Customer();
-		// Find customer with ID
-		ResultSet customerSetFound = statement.executeQuery("SELECT ID, CUST_NAME, PASSWORD FROM APP.CUSTOMER WHERE ID=" + id);
-		// Store customer
-		customerSetFound.next();
-		//customerFound = (Customer)customerSetFound;
-		customerFound.setId(id);
-		customerFound.setCustName(customerSetFound.getString("CUST_NAME"));
-		customerFound.setPassword(customerSetFound.getString("PASSWORD"));
+		Customer customerFound;
+		ResultSet customerSetFound;
+		try	{
+			statement = connection.createStatement();
+			customerFound = new Customer();
+			// Find customer with ID
+			customerSetFound = statement.executeQuery("SELECT ID, CUST_NAME, PASSWORD FROM APP.CUSTOMER WHERE ID=" + id);
+			// Store customer
+			customerSetFound.next();
+			//customerFound = (Customer)customerSetFound;
+			customerFound.setId(id);
+			customerFound.setCustName(customerSetFound.getString("CUST_NAME"));
+			customerFound.setPassword(customerSetFound.getString("PASSWORD"));
+		}catch(SQLException e)	{
+			throw new ClosedConnectionStatementCreationException();
+		}
 		// Close connections
-		statement.close();
+		try	{
+			customerSetFound.close();
+			statement.close();
+		}catch(SQLException e)	{
+			throw new ConnectionCloseException();
+		}
 		pool.returnConnection(connection);
 		// Return it
 		return customerFound;
 	}
 	// Return all existing customers
 	@Override
-	public Collection<Customer> getAllCustomers() throws Exception
+	public Collection<Customer> getAllCustomers() throws ConnectionReceivedAfterWaiting,
+		ClosedConnectionStatementCreationException, ConnectionCloseException
 	{
 		// DB Connection
-		Connection connection = pool.getConnection();
-		Statement statement = connection.createStatement();
-		// Get all customers from DB
-		ResultSet customersFound = statement.executeQuery("SELECT ID, CUST_NAME, PASSWORD FROM APP.CUSTOMER");
-		// Prepare ArrayList to put all customers in
-		ArrayList<Customer> allCustomers = new ArrayList<Customer>(); 
-		// Put all customers from ResultSet into ArrayList
-		while(customersFound.next())
-		{
-			// Prepare temp Customer
-			Customer tempCustomer = new Customer();
-			tempCustomer.setId(customersFound.getLong("ID"));
-			tempCustomer.setCustName(customersFound.getString("CUST_NAME"));
-			tempCustomer.setPassword(customersFound.getString("PASSWORD"));
-			// Add it to the collection
-			allCustomers.add(tempCustomer);
+		Connection connection;
+		try	{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e)	{
+			throw new ConnectionReceivedAfterWaiting();
+		}
+		Statement statement;
+		ResultSet customersFound;
+		ArrayList<Customer> allCustomers;
+		try	{
+			statement = connection.createStatement();
+			// Get all customers from DB
+			customersFound = statement.executeQuery("SELECT ID, CUST_NAME, PASSWORD FROM APP.CUSTOMER");
+			// Prepare ArrayList to put all customers in
+			allCustomers = new ArrayList<Customer>(); 
+			// Put all customers from ResultSet into ArrayList
+			while(customersFound.next())
+			{
+				// Prepare temp Customer
+				Customer tempCustomer = new Customer();
+				tempCustomer.setId(customersFound.getLong("ID"));
+				tempCustomer.setCustName(customersFound.getString("CUST_NAME"));
+				tempCustomer.setPassword(customersFound.getString("PASSWORD"));
+				// Add it to the collection
+				allCustomers.add(tempCustomer);
+			}
+
+		}catch(SQLException e)	{
+			throw new ClosedConnectionStatementCreationException();
 		}
 		// Close connections
-		statement.close();
+		try	{
+			statement.close();
+			customersFound.close();
+		}catch(SQLException e)	{
+			throw new ConnectionCloseException();
+		}
 		pool.returnConnection(connection);
 		// Return collection of all customers
 		return allCustomers;		
 	}
 	// Returns collection of all customer's coupons
 	@Override
-	public Collection<Coupon> getCoupons(Customer customer) throws Exception
+	public Collection<Coupon> getCoupons(Customer customer) throws ConnectionReceivedAfterWaiting,
+		ClosedConnectionStatementCreationException, ConnectionCloseException
 	{
 		// DB Connection
-		Connection connection = pool.getConnection();
-		Statement statement = connection.createStatement();
-		// If customer was received without ID - set ID
-		if(customer.getId() == 0)
-		{
-			// Get customer ID
-			ResultSet customerSetFound = statement.executeQuery(
-					"SELECT ID, CUST_NAME, PASSWORD FROM APP.CUSTOMER WHERE CUST_NAME='" 
-					+ customer.getCustName() + "'");
-			customerSetFound.next();
-			customer.setId(customerSetFound.getLong("ID"));
-			customerSetFound.close();
+		Connection connection;
+		try	{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e)	{
+			throw new ConnectionReceivedAfterWaiting();
 		}
-		// Get all customer's coupons from JOIN table
-		ResultSet couponsFound = statement.executeQuery(
-				"SELECT * FROM (APP.CUSTOMER_COUPON inner join APP.COUPON on APP.COUPON.ID = APP.CUSTOMER_COUPON.COUPON_ID) "
-				+ "WHERE CUST_ID=" + customer.getId());
-		// Prepare ArrayList to put coupons in
-		ArrayList<Coupon> allCoupons = new ArrayList<Coupon>();
-		// Put all found coupons into Collection
-		while(couponsFound.next())
-		{
-			// Prepare temp coupon
-			Coupon tempCoupon = new Coupon();
-			tempCoupon.setId(couponsFound.getLong("ID"));
-			tempCoupon.setTitle(couponsFound.getString("TITLE"));
-			tempCoupon.setStartDate(couponsFound.getDate("START_DATE"));
-			tempCoupon.setEndDate(couponsFound.getDate("END_DATE"));
-			tempCoupon.setAmount(couponsFound.getInt("AMOUNT"));
-			tempCoupon.setType(CouponType.valueOf(couponsFound.getString("COUPON_TYPE")));
-			tempCoupon.setMessage(couponsFound.getString("MESSAGE"));
-			tempCoupon.setPrice(couponsFound.getDouble("PRICE"));
-			// Add it to the Collection
-			allCoupons.add(tempCoupon);
+		Statement statement;
+		ResultSet couponsFound;
+		ArrayList<Coupon> allCoupons;
+		try	{
+			statement = connection.createStatement();
+			// If customer was received without ID - set ID
+			if(customer.getId() == 0)
+			{
+				// Get customer ID
+				ResultSet customerSetFound = statement.executeQuery(
+						"SELECT ID, CUST_NAME, PASSWORD FROM APP.CUSTOMER WHERE CUST_NAME='" 
+						+ customer.getCustName() + "'");
+				customerSetFound.next();
+				customer.setId(customerSetFound.getLong("ID"));
+				customerSetFound.close();
+			}
+			// Get all customer's coupons from JOIN table
+			couponsFound = statement.executeQuery(
+					"SELECT * FROM (APP.CUSTOMER_COUPON inner join APP.COUPON on APP.COUPON.ID = APP.CUSTOMER_COUPON.COUPON_ID) "
+					+ "WHERE CUST_ID=" + customer.getId());
+			// Prepare ArrayList to put coupons in
+			allCoupons = new ArrayList<Coupon>();
+			// Put all found coupons into Collection
+			while(couponsFound.next())
+			{
+				// Prepare temp coupon
+				Coupon tempCoupon = new Coupon();
+				tempCoupon.setId(couponsFound.getLong("ID"));
+				tempCoupon.setTitle(couponsFound.getString("TITLE"));
+				tempCoupon.setStartDate(couponsFound.getDate("START_DATE"));
+				tempCoupon.setEndDate(couponsFound.getDate("END_DATE"));
+				tempCoupon.setAmount(couponsFound.getInt("AMOUNT"));
+				tempCoupon.setType(CouponType.valueOf(couponsFound.getString("COUPON_TYPE")));
+				tempCoupon.setMessage(couponsFound.getString("MESSAGE"));
+				tempCoupon.setPrice(couponsFound.getDouble("PRICE"));
+				// Add it to the Collection
+				allCoupons.add(tempCoupon);
+			}
+		}catch(SQLException e)	{
+			throw new ClosedConnectionStatementCreationException();
 		}
 		// Close connections
-		statement.close();
+		try	{
+			statement.close();
+			couponsFound.close();
+		}catch(SQLException e)	{
+			throw new ConnectionCloseException();
+		}
 		pool.returnConnection(connection);
 		// Return Collection of all coupons
 		return allCoupons;
 	}
 	// Login - return true on success, false on fail
 	@Override
-	public boolean login(String custName, String password) throws Exception
+	public boolean login(String custName, String password) throws ConnectionReceivedAfterWaiting,
+		ClosedConnectionStatementCreationException, ConnectionCloseException
 	{
+		// Flag
+		boolean loginSuccess = false;
 		// DB Connection
-		Connection connection = pool.getConnection();
-		Statement statement = connection.createStatement();
-		// Find customer by NAME in DATABASE
-		ResultSet customerFound = statement.executeQuery("SELECT CUST_NAME, PASSWORD "
-				+ "FROM APP.CUSTOMER WHERE CUST_NAME='" + custName + "'");
-		// If customer wasn't found - next() will throw EOFException
-		customerFound.next();
-		// Check the password, return true on success
-		if(customerFound.getString("PASSWORD").equals(password))
-		{
-			return true;
+		Connection connection;
+		try	{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e)	{
+			throw new ConnectionReceivedAfterWaiting();
+		}
+		Statement statement;
+		ResultSet customerFound;
+		try	{
+			statement = connection.createStatement();
+			// Find customer by NAME in DATABASE
+			customerFound = statement.executeQuery("SELECT CUST_NAME, PASSWORD "
+					+ "FROM APP.CUSTOMER WHERE CUST_NAME='" + custName + "'");
+			// If customer wasn't found - next() will throw EOFException
+			customerFound.next();
+			// Check the password, return true on success
+			if(customerFound.getString("PASSWORD").equals(password))
+			{
+				loginSuccess = true;
+			}
+		}catch(SQLException e)	{
+			throw new ClosedConnectionStatementCreationException();
 		}
 		// Close connections
-		statement.close();
+		try	{
+			statement.close();
+			customerFound.close();
+		}catch(SQLException e)	{
+			throw new ConnectionCloseException();
+		}
 		pool.returnConnection(connection);
-		// if user was found, but password was wrong
-		return false;
+		// 
+		return loginSuccess;
 	}
 }
