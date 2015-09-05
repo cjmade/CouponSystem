@@ -8,8 +8,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 
-
-import exceptions.ObjectDontExistException;
+import exceptions.ClosedConnectionStatementCreationException;
+import exceptions.ConnectionCloseException;
+import exceptions.ConnectionReceivedAfterWaiting;
+import exceptions.FailedToCreateCouponException;
+import exceptions.GetConnectionWaitInteruptedException;
 import objects.Coupon;
 import objects.CouponType;
 
@@ -24,270 +27,408 @@ public class CouponDBDAO implements CouponDAO {
 
 	// Adds coupon to a coupons list
 	@Override
-	public void createCoupon(Coupon coupon) throws Exception {
-		Connection connection = pool.getConnection();
-		Statement statement = connection.createStatement();
-		// Prepare SQL message to insert new coupon
-		String insertSQL = "INSERT INTO APP.COUPON (IMAGE,PRICE,MESSAGE,COUPON_TYPE,AMOUNT,END_DATE,START_DATE,TITLE,ID) VALUES ('"
-				+ coupon.getImage()
-				+ "', '"
-				+ coupon.getPrice()
-				+ "', '"
-				+ coupon.getMessage()
-				+ "', '"
-				+ coupon.getType()
-				+ "', '"
-				+ coupon.getAmount()
-				+ "', '"
-				+ coupon.getEndDate()
-				+ "', '"
-				+ coupon.getStartDate()
-				+ "', '"
-				+ coupon.getTitle()
-				+ "', '"
-				+ coupon.getId() + "')";
-		// Execute prepared Statement
-		statement.execute(insertSQL);
-		// LOG
-		System.out.println(coupon.toString() + " was added to the table");
-		statement.close();
-		pool.returnConnection(connection);
-	}
-
-	@Override
-	// Removes relevant rows from CUSTOMER_COUPON, COMPANY_COUPON as well as
-	// Coupon itself
-	public void removeCoupon(Coupon coupon) throws Exception {
-		Connection connection = pool.getConnection();
-		// Get coupon ID from DB
-		String sqlRequest = "SELECT ID FROM APP.COUPON WHERE TITLE='"
-				+ coupon.getTitle() + "'";
-		Statement statement = connection.createStatement();
-		ResultSet idFound = statement.executeQuery(sqlRequest);
-		idFound.next();
-		// coupon.setId(idFound.getLong("ID"));
-		// Prepare message to remove from purchase history
-		String removeSQL = "DELETE FROM APP.CUSTOMER_COUPON WHERE COUPON_ID ="
-				+ coupon.getId();
-		// Remove coupon from purchase history
-		statement.execute(removeSQL);
-		// Prepare message to remove from company's coupons
-		removeSQL = "DELETE FROM APP.COMPANY_COUPON WHERE COUPON_ID="
-				+ coupon.getId();
-		// Remove coupon from company
-		statement.execute(removeSQL);
-		// Prepare SQL message to remove the Coupon
-		removeSQL = "DELETE FROM APP.COUPON WHERE ID=" + coupon.getId();
-		// Remove the Coupon himself
-		statement.execute(removeSQL);
-		System.out.println(coupon.toString() + " was deleted");
-		idFound.close();
-		statement.close();
-		pool.returnConnection(connection);
-	}
-
-	@Override
-	public void updateCoupon(Coupon coupon) throws Exception {
-		Connection connection = pool.getConnection();
-		// Statement statement = connection.createStatement();
-		// Check that Coupon with that name exists
-		// if (!statement.execute("SELECT ID FROM APP.COUPON WHERE ID = '"
-		// + coupon.getId() + "'")) {
-		// If such Coupon does not exist - throw exception
-		// throw new ObjectDontExistException();
-		// }
-		// Prepare SQL message to remove the Coupon
-		String updateSQL = "UPDATE APP.COUPON SET AMOUNT=?, ID=?,  MESSAGE=?, PRICE=?, TITLE=?, END_DATE=?, START_DATE=?, IMAGE=?,COUPON_TYPE=?  WHERE ID=?";
-		PreparedStatement preparedStatement = connection
-				.prepareStatement(updateSQL);
-		preparedStatement.setInt(1, coupon.getAmount());
-		preparedStatement.setLong(2, coupon.getId());
-		preparedStatement.setString(3, coupon.getMessage());
-		preparedStatement.setDouble(4, coupon.getPrice());
-		preparedStatement.setString(5, coupon.getTitle());
-		preparedStatement.setDate(6, (java.sql.Date) coupon.getEndDate());
-		preparedStatement.setDate(7, (java.sql.Date) coupon.getStartDate());
-		preparedStatement.setString(8, coupon.getImage());
-		preparedStatement.setString(9, coupon.getType().name());
-		preparedStatement.setLong(10, coupon.getId());
-		
-		// update the Coupon
-		preparedStatement.execute();
-
-		System.out.println(coupon.toString() + " was updated");
-		// statement.close();
-		pool.returnConnection(connection);
-	}
-
-	@Override
-	public Coupon getCoupon(long id) throws Exception {
-		Connection connection = pool.getConnection();
-		Statement statement = connection.createStatement();
-		// Check that Coupon with that name exists
-		if (!statement.execute("SELECT ID FROM APP.COUPON WHERE ID=" + id)) {
-			// If such Coupon does not exist - throw exception
-			throw new ObjectDontExistException();
+	public void createCoupon(Coupon coupon) throws ConnectionReceivedAfterWaiting, 
+		ConnectionCloseException, FailedToCreateCouponException 
+	{
+		// Establish Connection
+		Connection connection;
+		try	{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e)	{
+			throw new ConnectionReceivedAfterWaiting();
 		}
-		// Prepare SQL message to get the Coupon by the id
-		String sql = "SELECT * FROM APP.COUPON WHERE ID = ?";
-		PreparedStatement preparedStatement = connection.prepareStatement(sql);
-		preparedStatement.setLong(1, id);
-		// getting the values into a result set
-		ResultSet rs = preparedStatement.executeQuery();
-		Coupon coupon = new Coupon();
-		rs.next();
-		coupon.setAmount(rs.getInt("AMOUNT"));
-		coupon.setId(rs.getLong("ID"));
-		coupon.setImage(rs.getString("IMAGE"));
-		coupon.setMessage(rs.getString("MESSAGE"));
-		coupon.setPrice(rs.getDouble("PRICE"));
-		coupon.setTitle(rs.getString("TITLE"));
-		coupon.setEndDate(rs.getDate("END_DATE"));
-		coupon.setStartDate(rs.getDate("START_DATE"));
-		coupon.setType(CouponType.valueOf(rs.getString("COUPON_TYPE")));
-		rs.close();
-		statement.close();
-		preparedStatement.close();
+		// Prepare and execute statement
+		Statement statement;
+		try	{
+			statement = connection.createStatement();
+			// Prepare SQL message to insert new coupon
+			String insertSQL = "INSERT INTO APP.COUPON (IMAGE,PRICE,MESSAGE,COUPON_TYPE,AMOUNT,END_DATE,START_DATE,TITLE,ID) VALUES ('"
+					+ coupon.getImage()
+					+ "', '"
+					+ coupon.getPrice()
+					+ "', '"
+					+ coupon.getMessage()
+					+ "', '"
+					+ coupon.getType()
+					+ "', '"
+					+ coupon.getAmount()
+					+ "', '"
+					+ coupon.getEndDate()
+					+ "', '"
+					+ coupon.getStartDate()
+					+ "', '"
+					+ coupon.getTitle()
+					+ "', '"
+					+ coupon.getId() + "')";
+			// Execute prepared Statement
+			statement.execute(insertSQL);
+			// LOG
+			System.out.println(coupon.toString() + " was added to the table");
+		}catch(SQLException e)	{
+			throw new FailedToCreateCouponException();
+		}
+		// Close connections
+		try	{
+			statement.close();
+		}catch(SQLException e)	{
+			throw new ConnectionCloseException();
+		}
+		pool.returnConnection(connection);
+	}
+	// Removes relevant rows from CUSTOMER_COUPON, COMPANY_COUPON as well as coupon itself
+	@Override
+	public void removeCoupon(Coupon coupon) throws ConnectionReceivedAfterWaiting,
+		ClosedConnectionStatementCreationException, ConnectionCloseException
+	{
+		Connection connection;
+		try	{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e)	{
+			throw new ConnectionReceivedAfterWaiting();
+		}
+		// Get coupon ID from DB
+		Statement statement;
+		ResultSet idFound;
+		try	{
+			statement = connection.createStatement();
+			String sqlRequest = "SELECT ID FROM APP.COUPON WHERE TITLE='"+ coupon.getTitle() + "'";
+			idFound = statement.executeQuery(sqlRequest);
+			idFound.next();
+			// coupon.setId(idFound.getLong("ID"));
+			// Prepare message to remove from purchase history
+			String removeSQL = "DELETE FROM APP.CUSTOMER_COUPON WHERE COUPON_ID ="
+					+ coupon.getId();
+			// Remove coupon from purchase history
+			statement.execute(removeSQL);
+			// Prepare message to remove from company's coupons
+			removeSQL = "DELETE FROM APP.COMPANY_COUPON WHERE COUPON_ID="
+					+ coupon.getId();
+			// Remove coupon from company
+			statement.execute(removeSQL);
+			// Prepare SQL message to remove the Coupon
+			removeSQL = "DELETE FROM APP.COUPON WHERE ID=" + coupon.getId();
+			// Remove the Coupon himself
+			statement.execute(removeSQL);
+			System.out.println(coupon.toString() + " was deleted");
+		}catch(SQLException e)	{
+			throw new ClosedConnectionStatementCreationException();
+		}		
+		// Close connections
+		try	{
+			idFound.close();
+			statement.close();
+		}catch(SQLException e)	{
+			throw new ConnectionCloseException();
+		}
+		pool.returnConnection(connection);
+	}
+	// Update existing coupon
+	@Override
+	public void updateCoupon(Coupon coupon) throws ConnectionReceivedAfterWaiting, 
+		ClosedConnectionStatementCreationException, ConnectionCloseException 
+	{
+		// Establish connection
+		Connection connection;
+		try	{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e)	{
+			throw new ConnectionReceivedAfterWaiting();
+		}
+		PreparedStatement preparedStatement;
+		// Prepare and execute the update
+		try	{
+			// Prepare SQL message to remove the Coupon
+			String updateSQL = "UPDATE APP.COUPON SET AMOUNT=?, ID=?,  MESSAGE=?, PRICE=?, TITLE=?, END_DATE=?, START_DATE=?, IMAGE=?,COUPON_TYPE=?  WHERE ID=?";
+			// Prepare statement
+			preparedStatement = connection.prepareStatement(updateSQL);
+			preparedStatement.setInt(1, coupon.getAmount());
+			preparedStatement.setLong(2, coupon.getId());
+			preparedStatement.setString(3, coupon.getMessage());
+			preparedStatement.setDouble(4, coupon.getPrice());
+			preparedStatement.setString(5, coupon.getTitle());
+			preparedStatement.setDate(6, (java.sql.Date) coupon.getEndDate());
+			preparedStatement.setDate(7, (java.sql.Date) coupon.getStartDate());
+			preparedStatement.setString(8, coupon.getImage());
+			preparedStatement.setString(9, coupon.getType().name());
+			preparedStatement.setLong(10, coupon.getId());
+			// update the Coupon
+			preparedStatement.execute();
+			// Log
+			System.out.println(coupon.toString() + " was updated");
+		}catch(SQLException e)	{
+			throw new ClosedConnectionStatementCreationException();
+		}
+		// Close Connections
+		try	{
+			preparedStatement.close();
+		}catch(SQLException e)	{
+			throw new ConnectionCloseException();
+		}
+		pool.returnConnection(connection);
+	}
+	// Returns coupon by ID, or NULL if such coupon does not exist
+	@Override
+	public Coupon getCoupon(long id) throws ConnectionReceivedAfterWaiting, 
+		ClosedConnectionStatementCreationException, ConnectionCloseException 
+	{
+		Connection connection;
+		try
+		{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e)
+		{
+			throw new ConnectionReceivedAfterWaiting();
+		}
+		// Prepare and execute coupon
+		Statement statement;
+		ResultSet rs;
+		String sql;
+		Coupon coupon = null;;
+		try	{
+			statement = connection.createStatement();
+			// Prepare SQL message to get the Coupon by the id
+			sql = "SELECT * FROM APP.COUPON WHERE ID="+id;
+			// getting the values into a result set
+			rs = statement.executeQuery(sql);
+			coupon = new Coupon();
+			if(rs.next())
+			{
+				coupon.setAmount(rs.getInt("AMOUNT"));
+				coupon.setId(rs.getLong("ID"));
+				coupon.setImage(rs.getString("IMAGE"));
+				coupon.setMessage(rs.getString("MESSAGE"));
+				coupon.setPrice(rs.getDouble("PRICE"));
+				coupon.setTitle(rs.getString("TITLE"));
+				coupon.setEndDate(rs.getDate("END_DATE"));
+				coupon.setStartDate(rs.getDate("START_DATE"));
+				coupon.setType(CouponType.valueOf(rs.getString("COUPON_TYPE")));
+			}
+		}catch(SQLException e)	{
+			throw new ClosedConnectionStatementCreationException();
+		}
+		// Close connections
+		try	{
+			rs.close();
+			statement.close();
+		}catch(SQLException e)	{
+			throw new ConnectionCloseException();
+		}
 		pool.returnConnection(connection);
 		return coupon;
 	}
-
 	// Returns collection of all existing coupons
 	@Override
-	public Collection<Coupon> getAllCoupons() throws Exception {
-		Connection connection = pool.getConnection();
-		Statement statement = connection.createStatement();
-		ArrayList<Coupon> coupons = new ArrayList<Coupon>();
-		String sql = "SELECT * FROM APP.COUPON  ";
-		ResultSet rs = statement.executeQuery(sql);
-		while (rs.next()) {
-			Coupon coupon = new Coupon();
-			coupon.setAmount(rs.getInt("AMOUNT"));
-			coupon.setType(CouponType.valueOf(rs.getString("COUPON_TYPE")));
-			coupon.setEndDate(rs.getDate("END_DATE"));
-			coupon.setId(rs.getLong("ID"));
-			coupon.setImage(rs.getString("IMAGE"));
-			coupon.setMessage(rs.getString("MESSAGE"));
-			coupon.setPrice(rs.getDouble("PRICE"));
-			coupon.setTitle(rs.getString("TITLE"));
-			coupon.setStartDate(rs.getDate("START_DATE"));
-			coupons.add(coupon);
-			System.out.println(coupon.toString());
-			coupons.add(coupon);
+	public Collection<Coupon> getAllCoupons() throws ConnectionReceivedAfterWaiting, 
+		ClosedConnectionStatementCreationException, ConnectionCloseException 
+	{
+		// Establish db connection
+		Connection connection;
+		try	{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e)	{
+			throw new ConnectionReceivedAfterWaiting();
 		}
-		rs.close();
-		statement.close();
+		// Prepare and execute SELECT
+		Statement statement;
+		ArrayList<Coupon> coupons;
+		ResultSet rs;
+		try	{
+			statement = connection.createStatement();
+			coupons = new ArrayList<Coupon>();
+			String sql = "SELECT * FROM APP.COUPON  ";
+			rs = statement.executeQuery(sql);
+			while (rs.next()) 
+			{
+				Coupon coupon = new Coupon();
+				coupon.setAmount(rs.getInt("AMOUNT"));
+				coupon.setType(CouponType.valueOf(rs.getString("COUPON_TYPE")));
+				coupon.setEndDate(rs.getDate("END_DATE"));
+				coupon.setId(rs.getLong("ID"));
+				coupon.setImage(rs.getString("IMAGE"));
+				coupon.setMessage(rs.getString("MESSAGE"));
+				coupon.setPrice(rs.getDouble("PRICE"));
+				coupon.setTitle(rs.getString("TITLE"));
+				coupon.setStartDate(rs.getDate("START_DATE"));
+				coupons.add(coupon);
+				System.out.println(coupon.toString());
+				coupons.add(coupon);
+			}
+		}catch(SQLException e)	{
+			throw new ClosedConnectionStatementCreationException();
+		}
+		// Close connections
+		try
+		{
+			rs.close();
+			statement.close();
+		}catch(SQLException e)
+		{
+			throw new ConnectionCloseException();
+		}
 		pool.returnConnection(connection);
 		return coupons;
 	}
-
 	// Returns all existing coupons of a certain type
 	@Override
-	public Collection<Coupon> getCouponByType(CouponType couponType)
-			throws Exception {
-		Connection connection = pool.getConnection();
-		// Prepare ArrayList to return
-		ArrayList<Coupon> allCouponsFound = new ArrayList<Coupon>();
-		// Prepare sql request
-		String sqlRequest = "SELECT * FROM APP.COUPON WHERE COUPON_TYPE='"
-				+ couponType + "'";
-		PreparedStatement statement = connection.prepareStatement(sqlRequest);
-		// Get all coupons in a ResultSet
-		ResultSet couponsFound = statement.executeQuery();
-		// Move all coupons from ResultSet to an ArrayList
-		while (couponsFound.next()) {
-			// Prepare temp coupon
-			Coupon tempCoupon = new Coupon();
-			tempCoupon.setId(couponsFound.getLong("ID"));
-			tempCoupon.setTitle(couponsFound.getString("TITLE"));
-			tempCoupon.setStartDate(couponsFound.getDate("START_DATE"));
-			tempCoupon.setEndDate(couponsFound.getDate("END_DATE"));
-			tempCoupon.setAmount(couponsFound.getInt("AMOUNT"));
-			tempCoupon.setType(CouponType.valueOf(couponsFound
-					.getString("COUPON_TYPE")));
-			tempCoupon.setMessage(couponsFound.getString("MESSAGE"));
-			tempCoupon.setPrice(couponsFound.getDouble("PRICE"));
-			// Add it to the Collection
-			allCouponsFound.add(tempCoupon);
+	public Collection<Coupon> getCouponByType(CouponType couponType) throws ConnectionReceivedAfterWaiting, 
+		ClosedConnectionStatementCreationException, ConnectionCloseException 
+	{
+		// Establish connection
+		Connection connection;
+		try	{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e)	{
+			throw new ConnectionReceivedAfterWaiting();
 		}
-		couponsFound.close();
-		statement.close();
+		// Prepare ArrayList to return
+		ArrayList<Coupon> allCouponsFound = null;
+		// Prepare and execute statement
+		PreparedStatement statement = null;
+		ResultSet couponsFound = null;
+		// Prepare sql request
+		String sqlRequest;
+		try	{
+			sqlRequest = "SELECT * FROM APP.COUPON WHERE COUPON_TYPE='"+ couponType + "'";
+			statement = connection.prepareStatement(sqlRequest);
+			// Get all coupons in a ResultSet
+			couponsFound = statement.executeQuery();
+			// Prepare Collection
+			allCouponsFound = new ArrayList<Coupon>();
+			// Move all coupons from ResultSet to an ArrayList
+			while (couponsFound.next()) 
+			{
+				// Prepare temp coupon
+				Coupon tempCoupon = new Coupon();
+				tempCoupon.setId(couponsFound.getLong("ID"));
+				tempCoupon.setTitle(couponsFound.getString("TITLE"));
+				tempCoupon.setStartDate(couponsFound.getDate("START_DATE"));
+				tempCoupon.setEndDate(couponsFound.getDate("END_DATE"));
+				tempCoupon.setAmount(couponsFound.getInt("AMOUNT"));
+				tempCoupon.setType(CouponType.valueOf(couponsFound.getString("COUPON_TYPE")));
+				tempCoupon.setMessage(couponsFound.getString("MESSAGE"));
+				tempCoupon.setPrice(couponsFound.getDouble("PRICE"));
+				// Add coupon to the Collection
+				allCouponsFound.add(tempCoupon);
+			}
+		}catch(SQLException e)	{
+			throw new ClosedConnectionStatementCreationException();
+		}
+		// Close connections
+		try	{
+			couponsFound.close();
+			statement.close();
+		}catch(SQLException e)	{
+			throw new ConnectionCloseException();
+		}
 		pool.returnConnection(connection);
 		// returns NULL, when no coupons found
-		System.out.println(allCouponsFound.toString());
 		return allCouponsFound;
 	}
-
 	// Returns all existing coupons of a certain price
 	@Override
-	public Collection<Coupon> getCouponByPrice(double price) throws Exception {
-		Connection connection = pool.getConnection();
-		// Prepare ArrayList to return
-		ArrayList<Coupon> allCouponsFound = new ArrayList<Coupon>();
-		// Prepare sql request
-		String sqlRequest = "SELECT * FROM APP.COUPON WHERE PRICE=?";
-		PreparedStatement statement = connection.prepareStatement(sqlRequest);
-		statement.setDouble(1, price);
-		// Get all coupons in a ResultSet
-		ResultSet couponsFound = statement.executeQuery();
-		// Move all coupons from ResultSet to an ArrayList
-		while (couponsFound.next()) {
-			// Prepare temp coupon
-			Coupon tempCoupon = new Coupon();
-			tempCoupon.setId(couponsFound.getLong("ID"));
-			tempCoupon.setTitle(couponsFound.getString("TITLE"));
-			tempCoupon.setStartDate(couponsFound.getDate("START_DATE"));
-			tempCoupon.setEndDate(couponsFound.getDate("END_DATE"));
-			tempCoupon.setAmount(couponsFound.getInt("AMOUNT"));
-			tempCoupon.setType(CouponType.valueOf(couponsFound
-					.getString("COUPON_TYPE")));
-			tempCoupon.setMessage(couponsFound.getString("MESSAGE"));
-			tempCoupon.setPrice(couponsFound.getDouble("PRICE"));
-			// Add it to the Collection
-			allCouponsFound.add(tempCoupon);
+	public Collection<Coupon> getCouponByPrice(double price) throws ConnectionReceivedAfterWaiting, 
+		ClosedConnectionStatementCreationException, ConnectionCloseException 
+	{
+		Connection connection;
+		try	{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e)	{
+			throw new ConnectionReceivedAfterWaiting();
 		}
-		System.out.println(allCouponsFound.toString());
-		couponsFound.close();
-		statement.close();
-		pool.returnConnection(connection);
+		// Prepare sql request
+		PreparedStatement statement;
+		// Prepare ArrayList to return
+		ArrayList<Coupon> allCouponsFound;
+		// Prepare resultSet
+		ResultSet couponsFound;
+		try	{
+			String sqlRequest = "SELECT * FROM APP.COUPON WHERE PRICE=?";
+			statement = connection.prepareStatement(sqlRequest);
+			allCouponsFound = new ArrayList<Coupon>();
+			statement.setDouble(1, price);
+			// Get all coupons in a ResultSet
+			couponsFound = statement.executeQuery();
+			// Move all coupons from ResultSet to an ArrayList
+			while (couponsFound.next()) {
+				// Prepare temp coupon
+				Coupon tempCoupon = new Coupon();
+				tempCoupon.setId(couponsFound.getLong("ID"));
+				tempCoupon.setTitle(couponsFound.getString("TITLE"));
+				tempCoupon.setStartDate(couponsFound.getDate("START_DATE"));
+				tempCoupon.setEndDate(couponsFound.getDate("END_DATE"));
+				tempCoupon.setAmount(couponsFound.getInt("AMOUNT"));
+				tempCoupon.setType(CouponType.valueOf(couponsFound
+						.getString("COUPON_TYPE")));
+				tempCoupon.setMessage(couponsFound.getString("MESSAGE"));
+				tempCoupon.setPrice(couponsFound.getDouble("PRICE"));
+				// Add it to the Collection
+				allCouponsFound.add(tempCoupon);
+			}
+		}catch(SQLException e)	{
+			throw new ClosedConnectionStatementCreationException();
+		}
+		// Close connections
+		try
+		{
+			couponsFound.close();
+			statement.close();
+		}catch(SQLException e)
+		{
+			throw new ConnectionCloseException();
+		}
+			pool.returnConnection(connection);
 		// returns NULL, when no coupons found
 		return allCouponsFound;
 	}
-
 	// Returns all existing coupons of that their price is smaller than certain
 	// price
 	@Override
-	public ArrayList<Coupon> getCouponTillDate(String date) throws Exception {
-		Connection connection = pool.getConnection();
+	public ArrayList<Coupon> getCouponTillDate(String date) throws ConnectionReceivedAfterWaiting,
+		ClosedConnectionStatementCreationException, ConnectionCloseException
+	{
+		Connection connection;
+		try	{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e)	{
+			throw new ConnectionReceivedAfterWaiting();
+		}
 		// Prepare ArrayList to return
 		ArrayList<Coupon> allCouponsFound = new ArrayList<Coupon>();
-		// Prepare sql request
+		// Prepare and execute sql request
 		String sqlRequest = "SELECT * FROM APP.COUPON WHERE END_DATE<=?";
-
-		PreparedStatement statement = connection.prepareStatement(sqlRequest);
-
-		statement.setDate(1, java.sql.Date.valueOf(date));
-		// Get all coupons in a ResultSet
-		ResultSet couponsFound = statement.executeQuery();
-		// Move all coupons from ResultSet to an ArrayList
-		while (couponsFound.next()) {
-			// Prepare temp coupon
-			Coupon tempCoupon = new Coupon();
-			tempCoupon.setId(couponsFound.getLong("ID"));
-			tempCoupon.setTitle(couponsFound.getString("TITLE"));
-			tempCoupon.setStartDate(couponsFound.getDate("START_DATE"));
-			tempCoupon.setEndDate(couponsFound.getDate("END_DATE"));
-			tempCoupon.setAmount(couponsFound.getInt("AMOUNT"));
-			tempCoupon.setType(CouponType.valueOf(couponsFound
-					.getString("COUPON_TYPE")));
-			tempCoupon.setMessage(couponsFound.getString("MESSAGE"));
-			tempCoupon.setPrice(couponsFound.getDouble("PRICE"));
-			// Add it to the Collection
-			allCouponsFound.add(tempCoupon);
+		PreparedStatement statement = null;
+		ResultSet couponsFound = null;
+		try	{
+			statement = connection.prepareStatement(sqlRequest);
+			statement.setDate(1, java.sql.Date.valueOf(date));
+			// Get all coupons in a ResultSet
+			couponsFound = statement.executeQuery();
+			// Move all coupons from ResultSet to an ArrayList
+			while (couponsFound.next()) {
+				// Prepare temp coupon
+				Coupon tempCoupon = new Coupon();
+				tempCoupon.setId(couponsFound.getLong("ID"));
+				tempCoupon.setTitle(couponsFound.getString("TITLE"));
+				tempCoupon.setStartDate(couponsFound.getDate("START_DATE"));
+				tempCoupon.setEndDate(couponsFound.getDate("END_DATE"));
+				tempCoupon.setAmount(couponsFound.getInt("AMOUNT"));
+				tempCoupon.setType(CouponType.valueOf(couponsFound
+						.getString("COUPON_TYPE")));
+				tempCoupon.setMessage(couponsFound.getString("MESSAGE"));
+				tempCoupon.setPrice(couponsFound.getDouble("PRICE"));
+				// Add it to the Collection
+				allCouponsFound.add(tempCoupon);
+			}
+		}catch(SQLException e)	{
+			throw new ClosedConnectionStatementCreationException();
 		}
-		System.out.println(allCouponsFound.toString());
-		couponsFound.close();
-		statement.close();
+		// Close connections
+		try	{
+			couponsFound.close();
+			statement.close();
+		}catch(SQLException e)	{
+			throw new ConnectionCloseException();
+		}
 		pool.returnConnection(connection);
 		// returns NULL, when no coupons found
 		return allCouponsFound;

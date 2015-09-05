@@ -8,7 +8,6 @@ import objects.Customer;
 import objects.Coupon;
 import dbAccess.CouponDBDAO;
 import dbAccess.CustomerDBDAO;
-import exceptions.InvalidLoginException;
 
 public class CustomerFacade implements ClientFacade {
 	// Save Customer Data
