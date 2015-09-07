@@ -18,7 +18,7 @@ public class CompanyDBDAO implements CompanyDAO {
 	}
 	// Creates new company, with unique name
 	@Override
-	public void createCompany(Company company) throws  ConnectionReceivedAfterWaiting, FailedToCreateCompanyException {
+	public void createCompany(Company company) throws  WaitingForConnectionInterrupted, FailedToCreateCompanyException {
 		// Get connection
 		Connection connection;
 		try
@@ -26,7 +26,7 @@ public class CompanyDBDAO implements CompanyDAO {
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e1)
 		{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 
 		// Prepare SQL message to insert new company
@@ -82,7 +82,7 @@ public class CompanyDBDAO implements CompanyDAO {
 	// Update existing company
 	@Override
 	public void updateCompany(Company company) 
-			throws NothingToUpdateException, ConnectionReceivedAfterWaiting, 
+			throws NothingToUpdateException, WaitingForConnectionInterrupted, 
 					ClosedConnectionStatementCreationException, UpdateDidNotExecuteException {
 		Connection connection;
 		Statement statement;
@@ -90,7 +90,7 @@ public class CompanyDBDAO implements CompanyDAO {
 			connection = pool.getConnection();
 			statement = connection.createStatement();
 		}catch(GetConnectionWaitInteruptedException e) {
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}catch(SQLException e) {
 			throw new ClosedConnectionStatementCreationException();
 		}			
@@ -121,7 +121,7 @@ public class CompanyDBDAO implements CompanyDAO {
 	}
 	// Returns Company by id
 	@Override
-	public Company getCompany(long id) throws ConnectionReceivedAfterWaiting, 
+	public Company getCompany(long id) throws WaitingForConnectionInterrupted, 
 		ClosedConnectionStatementCreationException, ConnectionCloseException {
 		// Establish db connection
 		Connection connection;
@@ -130,7 +130,7 @@ public class CompanyDBDAO implements CompanyDAO {
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e)
 		{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 		// Prepare SQL message to get the company by the id
 		String sql = "SELECT * FROM APP.COMPANY WHERE ID = ?";
@@ -167,14 +167,14 @@ public class CompanyDBDAO implements CompanyDAO {
 	}
 	// Returns all existing companies
 	@Override
-	public Collection<Company> getAllCompanies() throws ConnectionReceivedAfterWaiting, 
+	public Collection<Company> getAllCompanies() throws WaitingForConnectionInterrupted, 
 			ClosedConnectionStatementCreationException, ConnectionCloseException 
 	{
 		Connection connection;
 		try	{
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e)	{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 		// Find all companies IN DATABASE
 		String sql = "SELECT * FROM APP.COMPANY ";
@@ -215,14 +215,14 @@ public class CompanyDBDAO implements CompanyDAO {
 	}
 	// Return all coupons of a certain company
 	@Override
-	public Collection<Coupon> getCoupons(Company company) throws ConnectionReceivedAfterWaiting,
+	public Collection<Coupon> getCoupons(Company company) throws WaitingForConnectionInterrupted,
 		ClosedConnectionStatementCreationException, ConnectionCloseException
 	{
 		Connection connection;
 		try	{
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e)	{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 		Statement statement;
 		ArrayList<Coupon> coupons;
@@ -274,7 +274,7 @@ public class CompanyDBDAO implements CompanyDAO {
 	}
 	// Returns true on success, false on fail to Log In
 	@Override
-	public boolean login(String compName, String password) throws ConnectionReceivedAfterWaiting, 
+	public boolean login(String compName, String password) throws WaitingForConnectionInterrupted, 
 		ClosedConnectionStatementCreationException, ConnectionCloseException
 	{
 		Connection connection;
@@ -283,7 +283,7 @@ public class CompanyDBDAO implements CompanyDAO {
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e)
 		{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 		Statement statement;
 		String sqlStatement;

@@ -10,7 +10,7 @@ import java.util.Collection;
 
 import exceptions.ClosedConnectionStatementCreationException;
 import exceptions.ConnectionCloseException;
-import exceptions.ConnectionReceivedAfterWaiting;
+import exceptions.WaitingForConnectionInterrupted;
 import exceptions.FailedToCreateCouponException;
 import exceptions.GetConnectionWaitInteruptedException;
 import objects.Coupon;
@@ -27,7 +27,7 @@ public class CouponDBDAO implements CouponDAO {
 
 	// Adds coupon to a coupons list
 	@Override
-	public void createCoupon(Coupon coupon) throws ConnectionReceivedAfterWaiting, 
+	public void createCoupon(Coupon coupon) throws WaitingForConnectionInterrupted, 
 		ConnectionCloseException, FailedToCreateCouponException 
 	{
 		// Establish Connection
@@ -35,7 +35,7 @@ public class CouponDBDAO implements CouponDAO {
 		try	{
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e)	{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 		// Prepare and execute statement
 		Statement statement;
@@ -77,14 +77,14 @@ public class CouponDBDAO implements CouponDAO {
 	}
 	// Removes relevant rows from CUSTOMER_COUPON, COMPANY_COUPON as well as coupon itself
 	@Override
-	public void removeCoupon(Coupon coupon) throws ConnectionReceivedAfterWaiting,
+	public void removeCoupon(Coupon coupon) throws WaitingForConnectionInterrupted,
 		ClosedConnectionStatementCreationException, ConnectionCloseException
 	{
 		Connection connection;
 		try	{
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e)	{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 		// Get coupon ID from DB
 		Statement statement;
@@ -124,7 +124,7 @@ public class CouponDBDAO implements CouponDAO {
 	}
 	// Update existing coupon
 	@Override
-	public void updateCoupon(Coupon coupon) throws ConnectionReceivedAfterWaiting, 
+	public void updateCoupon(Coupon coupon) throws WaitingForConnectionInterrupted, 
 		ClosedConnectionStatementCreationException, ConnectionCloseException 
 	{
 		// Establish connection
@@ -132,7 +132,7 @@ public class CouponDBDAO implements CouponDAO {
 		try	{
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e)	{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 		PreparedStatement preparedStatement;
 		// Prepare and execute the update
@@ -168,7 +168,7 @@ public class CouponDBDAO implements CouponDAO {
 	}
 	// Returns coupon by ID, or NULL if such coupon does not exist
 	@Override
-	public Coupon getCoupon(long id) throws ConnectionReceivedAfterWaiting, 
+	public Coupon getCoupon(long id) throws WaitingForConnectionInterrupted, 
 		ClosedConnectionStatementCreationException, ConnectionCloseException 
 	{
 		Connection connection;
@@ -177,7 +177,7 @@ public class CouponDBDAO implements CouponDAO {
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e)
 		{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 		// Prepare and execute coupon
 		Statement statement;
@@ -218,7 +218,7 @@ public class CouponDBDAO implements CouponDAO {
 	}
 	// Returns collection of all existing coupons
 	@Override
-	public Collection<Coupon> getAllCoupons() throws ConnectionReceivedAfterWaiting, 
+	public Collection<Coupon> getAllCoupons() throws WaitingForConnectionInterrupted, 
 		ClosedConnectionStatementCreationException, ConnectionCloseException 
 	{
 		// Establish db connection
@@ -226,7 +226,7 @@ public class CouponDBDAO implements CouponDAO {
 		try	{
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e)	{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 		// Prepare and execute SELECT
 		Statement statement;
@@ -270,7 +270,7 @@ public class CouponDBDAO implements CouponDAO {
 	}
 	// Returns all existing coupons of a certain type
 	@Override
-	public Collection<Coupon> getCouponByType(CouponType couponType) throws ConnectionReceivedAfterWaiting, 
+	public Collection<Coupon> getCouponByType(CouponType couponType) throws WaitingForConnectionInterrupted, 
 		ClosedConnectionStatementCreationException, ConnectionCloseException 
 	{
 		// Establish connection
@@ -278,7 +278,7 @@ public class CouponDBDAO implements CouponDAO {
 		try	{
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e)	{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 		// Prepare ArrayList to return
 		ArrayList<Coupon> allCouponsFound = null;
@@ -326,14 +326,14 @@ public class CouponDBDAO implements CouponDAO {
 	}
 	// Returns all existing coupons of a certain price
 	@Override
-	public Collection<Coupon> getCouponByPrice(double price) throws ConnectionReceivedAfterWaiting, 
+	public Collection<Coupon> getCouponByPrice(double price) throws WaitingForConnectionInterrupted, 
 		ClosedConnectionStatementCreationException, ConnectionCloseException 
 	{
 		Connection connection;
 		try	{
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e)	{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 		// Prepare sql request
 		PreparedStatement statement;
@@ -383,14 +383,14 @@ public class CouponDBDAO implements CouponDAO {
 	// Returns all existing coupons of that their price is smaller than certain
 	// price
 	@Override
-	public ArrayList<Coupon> getCouponTillDate(String date) throws ConnectionReceivedAfterWaiting,
+	public ArrayList<Coupon> getCouponTillDate(String date) throws WaitingForConnectionInterrupted,
 		ClosedConnectionStatementCreationException, ConnectionCloseException
 	{
 		Connection connection;
 		try	{
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e)	{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 		// Prepare ArrayList to return
 		ArrayList<Coupon> allCouponsFound = new ArrayList<Coupon>();

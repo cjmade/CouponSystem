@@ -52,10 +52,8 @@ public class AdminFacade implements ClientFacade
 		try
 		{
 			compDBDAO.createCompany(newCompany);
-		}catch(SQLException e)
+		}catch(WaitingForConnectionInterrupted | FailedToCreateCompanyException e)
 		{
-			System.out.println("DB connection error");
-		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -64,165 +62,56 @@ public class AdminFacade implements ClientFacade
 	@SuppressWarnings("unused")
 	private void removeCompany(Company company)
 	{
-		// Remove company
-		try
-		{
-			compDBDAO.removeCompany(company);
-		}catch(SQLException e)
-		{
-			System.out.println("DB connection error");
-		}catch(Exception e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		compDBDAO.removeCompany(company);
+
 	}
 	// Update existing company
 	@SuppressWarnings("unused")
 	private void updateCompany(Company company) throws ObjectDontExistException
 	{
-		// update company
-		try
-		{
-			compDBDAO.updateCompany(company);
-		}catch(SQLException e)
-		{
-			System.out.println("DB connection error");
-		}catch(Exception e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		compDBDAO.updateCompany(company);
 	}
 	// Find Company by id
 	@SuppressWarnings("unused")
 	private Company getCompany(int id)
 	{
-		try
-		{
-			return compDBDAO.getCompany(id);
-		}catch(SQLException e)
-		{
-			System.out.println("DB connection error");
-		}catch(ObjectDontExistException e) 
-		{
-			System.out.println("No such company");
-		}catch(Exception e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		// if a company wasn't found
-		return null;
+		return compDBDAO.getCompany(id);
 	}
 	// Returns Collection<Company> of all existing companies
 	@SuppressWarnings("unused")
 	private Collection<Company> getAllCompanies()
 	{
-		try
-		{
-			return compDBDAO.getAllCompanies();
-		}catch(SQLException e)
-		{
-			System.out.println("DB connection error");
-		}catch(Exception e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		// if there are no companies to return
-		return null;
+		return compDBDAO.getAllCompanies();
 	}
-
 	// Create new Customer
 	@SuppressWarnings("unused")
 	private void createCustomer(Customer newCustomer)
 	{
-		try
-		{
-			custDBDAO.createCustomer(newCustomer);
-		}catch(SQLException e)
-		{
-			System.out.println("Customer already exist OR DB connection error");
-		}catch(Exception e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		custDBDAO.createCustomer(newCustomer);
 	}
 	// Removes customer and all his coupons, if exists
 	@SuppressWarnings("unused")
 	private void removeCustomer(Customer customer)
 	{
-		// Remove customer
-		try
-		{
-			custDBDAO.removeCustomer(customer);
-		}catch(SQLException e)
-		{
-			System.out.println("DB connection error");
-		}catch(NullPointerException e)
-		{
-			System.out.println("No such client found, nothing to remove");
-		}catch(Exception e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		custDBDAO.removeCustomer(customer);
 	}
 	// Update existing customer
 	@SuppressWarnings("unused")
 	private void updateCustomer(Customer customer)
 	{
-		// if customer exists - update it
-		try
-		{
-			custDBDAO.updateCustomer(customer);
-		}catch(SQLException e)
-		{
-			System.out.println("DB connection error");
-		}catch(ObjectDontExistException e)
-		{
-			System.out.println("No " + customer.getCustName() + " customer found, nothing to update");
-		}catch(Exception e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		custDBDAO.updateCustomer(customer);
 	}
 	// Find Customer by id
 	@SuppressWarnings("unused")
 	private Customer getCustomer(int id)
 	{
-		try
-		{
-			return custDBDAO.getCustomer(id);
-		}catch(SQLException e)
-		{
-			System.out.println("DB connection error");
-		}catch(Exception e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
+		return custDBDAO.getCustomer(id);
 	}
 	// Returns Collection<Customer> of all existing customers
 	@SuppressWarnings("unused")
 	private Collection<Customer> getAllCustomers()
 	{
-		try
-		{
-			// Can be null!
-			return custDBDAO.getAllCustomers();
-		}catch(SQLException e)
-		{
-			System.out.println("DB connection error");
-		}catch(Exception e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
+		// Can be null!
+		return custDBDAO.getAllCustomers();
 	}
 }

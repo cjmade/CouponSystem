@@ -19,7 +19,7 @@ public class CustomerDBDAO implements CustomerDAO
 	{	}
 	// Creates new Customer from the passed object Customer
 	@Override
-	public void createCustomer(Customer customer) throws ConnectionReceivedAfterWaiting, 
+	public void createCustomer(Customer customer) throws WaitingForConnectionInterrupted, 
 		FailedToCreateCustomerException, ConnectionCloseException
 	{
 		// DB Connection
@@ -27,7 +27,7 @@ public class CustomerDBDAO implements CustomerDAO
 		try	{
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e)	{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 		// Prepare SQL message to insert new company
 		String insertSQL = "INSERT INTO APP.CUSTOMER " + "(PASSWORD, COMP_NAME) VALUES" + "(?,?)";
@@ -54,7 +54,7 @@ public class CustomerDBDAO implements CustomerDAO
 	}
 	// Remove Customer from the table
 	@Override
-	public void removeCustomer(Customer customer) throws ConnectionReceivedAfterWaiting, 
+	public void removeCustomer(Customer customer) throws WaitingForConnectionInterrupted, 
 		ClosedConnectionStatementCreationException, ConnectionCloseException
 	{
 		// DB Connection
@@ -62,7 +62,7 @@ public class CustomerDBDAO implements CustomerDAO
 		try	{
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e)	{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 		// Get customer ID from DB
 		String sqlRequest = "SELECT ID FROM APP.CUSTOMER WHERE CUST_NAME='" + customer.getCustName() + "'";
@@ -96,7 +96,7 @@ public class CustomerDBDAO implements CustomerDAO
 	}
 	// Update existing customer info BY ID
 	@Override
-	public void updateCustomer(Customer customer) throws ConnectionReceivedAfterWaiting,
+	public void updateCustomer(Customer customer) throws WaitingForConnectionInterrupted,
 		ClosedConnectionStatementCreationException, ConnectionCloseException
 	{
 		// DB Connection
@@ -104,7 +104,7 @@ public class CustomerDBDAO implements CustomerDAO
 		try	{
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e)	{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 		// Prepare and execute statement
 		Statement statement;
@@ -132,7 +132,7 @@ public class CustomerDBDAO implements CustomerDAO
 		pool.returnConnection(connection);
 	}
 	// Purchase coupon
-	public void purchaseCoupon(Customer customer, Coupon coupon) throws ConnectionReceivedAfterWaiting, 
+	public void purchaseCoupon(Customer customer, Coupon coupon) throws WaitingForConnectionInterrupted, 
 		ClosedConnectionStatementCreationException, ConnectionCloseException
 	{
 		// DB Connection
@@ -140,7 +140,7 @@ public class CustomerDBDAO implements CustomerDAO
 		try	{
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e)	{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 		// Prepare SQL message to insert new company
 		String insertSQL = "INSERT INTO APP.CUSTOMER_COUPON " + "(CUST_ID, COUPON_ID) VALUES" + "(?,?)";
@@ -164,7 +164,7 @@ public class CustomerDBDAO implements CustomerDAO
 	}
 	// Finds and returns customer from DB by ID
 	@Override
-	public Customer getCustomer(long id) throws ConnectionReceivedAfterWaiting, 
+	public Customer getCustomer(long id) throws WaitingForConnectionInterrupted, 
 		ClosedConnectionStatementCreationException, ConnectionCloseException
 	{
 		// DB Connection
@@ -172,7 +172,7 @@ public class CustomerDBDAO implements CustomerDAO
 		try	{
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e)	{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 		// Prepare and execute statement
 		Statement statement;
@@ -206,7 +206,7 @@ public class CustomerDBDAO implements CustomerDAO
 	}
 	// Return all existing customers
 	@Override
-	public Collection<Customer> getAllCustomers() throws ConnectionReceivedAfterWaiting,
+	public Collection<Customer> getAllCustomers() throws WaitingForConnectionInterrupted,
 		ClosedConnectionStatementCreationException, ConnectionCloseException
 	{
 		// DB Connection
@@ -214,7 +214,7 @@ public class CustomerDBDAO implements CustomerDAO
 		try	{
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e)	{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 		Statement statement;
 		ResultSet customersFound;
@@ -253,7 +253,7 @@ public class CustomerDBDAO implements CustomerDAO
 	}
 	// Returns collection of all customer's coupons
 	@Override
-	public Collection<Coupon> getCoupons(Customer customer) throws ConnectionReceivedAfterWaiting,
+	public Collection<Coupon> getCoupons(Customer customer) throws WaitingForConnectionInterrupted,
 		ClosedConnectionStatementCreationException, ConnectionCloseException
 	{
 		// DB Connection
@@ -261,7 +261,7 @@ public class CustomerDBDAO implements CustomerDAO
 		try	{
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e)	{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 		Statement statement;
 		ResultSet couponsFound;
@@ -317,7 +317,7 @@ public class CustomerDBDAO implements CustomerDAO
 	}
 	// Login - return true on success, false on fail
 	@Override
-	public boolean login(String custName, String password) throws ConnectionReceivedAfterWaiting,
+	public boolean login(String custName, String password) throws WaitingForConnectionInterrupted,
 		ClosedConnectionStatementCreationException, ConnectionCloseException
 	{
 		// Flag
@@ -327,7 +327,7 @@ public class CustomerDBDAO implements CustomerDAO
 		try	{
 			connection = pool.getConnection();
 		}catch(GetConnectionWaitInteruptedException e)	{
-			throw new ConnectionReceivedAfterWaiting();
+			throw new WaitingForConnectionInterrupted();
 		}
 		Statement statement;
 		ResultSet customerFound;

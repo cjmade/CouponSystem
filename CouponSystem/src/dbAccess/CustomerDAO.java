@@ -5,7 +5,7 @@ import java.util.Collection;
 
 import exceptions.ClosedConnectionStatementCreationException;
 import exceptions.ConnectionCloseException;
-import exceptions.ConnectionReceivedAfterWaiting;
+import exceptions.WaitingForConnectionInterrupted;
 import exceptions.FailedToCreateCustomerException;
 import objects.Coupon;
 import objects.Customer;
@@ -13,11 +13,11 @@ import objects.Customer;
 
 public interface CustomerDAO {
 
-	 void createCustomer(Customer customer) throws ConnectionReceivedAfterWaiting, FailedToCreateCustomerException, ConnectionCloseException;
-	 void removeCustomer(Customer customer) throws ConnectionReceivedAfterWaiting, ClosedConnectionStatementCreationException, ConnectionCloseException;
-	 void updateCustomer(Customer customer) throws ConnectionReceivedAfterWaiting, ClosedConnectionStatementCreationException, ConnectionCloseException;
-	 Customer getCustomer(long id) throws ConnectionReceivedAfterWaiting, ClosedConnectionStatementCreationException, ConnectionCloseException;
-	 Collection<Customer> getAllCustomers() throws ConnectionReceivedAfterWaiting, ClosedConnectionStatementCreationException, ConnectionCloseException;
-	 Collection<Coupon> getCoupons(Customer customer) throws ConnectionReceivedAfterWaiting, ClosedConnectionStatementCreationException, ConnectionCloseException;
-	 boolean login(String custName,String password) throws ConnectionReceivedAfterWaiting, ClosedConnectionStatementCreationException, ConnectionCloseException;
+	 void createCustomer(Customer customer) throws WaitingForConnectionInterrupted, FailedToCreateCustomerException, ConnectionCloseException;
+	 void removeCustomer(Customer customer) throws WaitingForConnectionInterrupted, ClosedConnectionStatementCreationException, ConnectionCloseException;
+	 void updateCustomer(Customer customer) throws WaitingForConnectionInterrupted, ClosedConnectionStatementCreationException, ConnectionCloseException;
+	 Customer getCustomer(long id) throws WaitingForConnectionInterrupted, ClosedConnectionStatementCreationException, ConnectionCloseException;
+	 Collection<Customer> getAllCustomers() throws WaitingForConnectionInterrupted, ClosedConnectionStatementCreationException, ConnectionCloseException;
+	 Collection<Coupon> getCoupons(Customer customer) throws WaitingForConnectionInterrupted, ClosedConnectionStatementCreationException, ConnectionCloseException;
+	 boolean login(String custName,String password) throws WaitingForConnectionInterrupted, ClosedConnectionStatementCreationException, ConnectionCloseException;
 }
