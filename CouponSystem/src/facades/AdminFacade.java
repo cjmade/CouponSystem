@@ -1,8 +1,6 @@
 package facades;
 
-import java.sql.SQLException;
 import java.util.Collection;
-
 import dbAccess.*;
 import objects.*;
 import exceptions.*;
@@ -23,9 +21,9 @@ public class AdminFacade implements ClientFacade
 		{
 			compDBDAO = new CompanyDBDAO();
 			custDBDAO = new CustomerDBDAO();
-		}catch(SQLException e)
+		}catch(DatabaseAccessError e)
 		{
-			System.out.println("DB connection error");
+			System.out.println(e.getMessage());
 		}
 	}
 	
@@ -49,31 +47,71 @@ public class AdminFacade implements ClientFacade
 	@SuppressWarnings("unused")
 	private void createCompany(Company newCompany)
 	{
+		boolean flag = false;
 		try	{
 			compDBDAO.createCompany(newCompany);
+			flag = true;
 		}catch(WaitingForConnectionInterrupted e)	{
-			System.out.println(e.getMessage() + ", company wasn't created");
+			System.out.print(e.getMessage());
 		}catch(FailedToCreateCompanyException e)	{
-			System.out.println(e.getMessage());
+			System.out.print(e.getMessage());
 		}
+		if(flag)
+			System.out.println(", company wasn't created");
 	}
 	// Removes company and all its coupons, if company exists
 	@SuppressWarnings("unused")
 	private void removeCompany(Company company)
 	{
-		compDBDAO.removeCompany(company);
+		boolean flag = false;
+		try	{
+			compDBDAO.removeCompany(company);
+			flag = true;
+		}catch(WaitingForConnectionInterrupted e)	{
+			System.out.print(e.getMessage());
+		}catch(ClosedConnectionStatementCreationException e)	{
+			System.out.print(e.getMessage());
+		}catch(ConnectionCloseException e)	{
+			System.out.print(e.getMessage());
+		}
+		if(flag)
+			System.out.println(", company wasn't removed");
 	}
 	// Update existing company
 	@SuppressWarnings("unused")
-	private void updateCompany(Company company) throws ObjectDontExistException
+	private void updateCompany(Company company)
 	{
-		compDBDAO.updateCompany(company);
+		boolean flag = false;
+		try	{
+			compDBDAO.updateCompany(company);
+			flag = true;
+		}catch(NothingToUpdateException e)	{
+			System.out.print(e.getMessage());
+		}catch(WaitingForConnectionInterrupted e)	{
+			System.out.print(e.getMessage());
+		}catch(ClosedConnectionStatementCreationException e)	{
+			System.out.print(e.getMessage());
+		}catch(UpdateDidNotExecuteException e)	{
+			System.out.print(e.getMessage());
+		}
+		if(flag)
+			System.out.println(", company wasn't updated");
 	}
 	// Find Company by id
 	@SuppressWarnings("unused")
 	private Company getCompany(int id)
 	{
-		return compDBDAO.getCompany(id);
+		Company company = null;
+		try	{
+			company = compDBDAO.getCompany(id);
+		}catch(WaitingForConnectionInterrupted e)	{
+			System.out.print(e.getMessage());
+		}catch(ClosedConnectionStatementCreationException e)	{
+			System.out.print(e.getMessage());
+		}catch(ConnectionCloseException e)	{
+			System.out.print(e.getMessage());
+		}
+		return company;
 	}
 	// Returns Collection<Company> of all existing companies
 	@SuppressWarnings("unused")

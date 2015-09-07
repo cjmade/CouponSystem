@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.HashSet;
 
 import exceptions.ConnectionCloseException;
+import exceptions.DatabaseAccessError;
 import exceptions.GetConnectionWaitInteruptedException;
 
 public class ConnectionPool  {
@@ -19,18 +20,24 @@ public class ConnectionPool  {
 	private HashSet<Connection> newConnections = null;
 	private HashSet<Connection> usedConnections = null;
 	// Constructor
-	private ConnectionPool() throws SQLException {
+	private ConnectionPool() throws DatabaseAccessError {
 		// Initialize connection collections
 		newConnections = new HashSet<Connection>();
 		usedConnections = new HashSet<Connection>();
 		// Fill the newConnections with appropriate number of connections
 		for (int i = 0; i < 5; i++) 
 		{
-			newConnections.add(DriverManager.getConnection(url, username, password));
+			try
+			{
+				newConnections.add(DriverManager.getConnection(url, username, password));
+			}catch(SQLException e)
+			{
+				throw new DatabaseAccessError();
+			}
 		}
 	}
 	// Methods
-	public static ConnectionPool getInstance() throws SQLException {
+	public static ConnectionPool getInstance() throws DatabaseAccessError  {
 		if  (pool == null) {
 			pool = new ConnectionPool();
 		}

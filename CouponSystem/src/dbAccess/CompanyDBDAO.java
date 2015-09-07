@@ -11,10 +11,12 @@ import java.util.Collection;
 
 public class CompanyDBDAO implements CompanyDAO {
 	// Connection attributes
-	ConnectionPool pool = ConnectionPool.getInstance();
+	ConnectionPool pool;
 
 	// Constructor, throws SQLException, on failed connection attempt
-	public CompanyDBDAO() throws SQLException {
+	public CompanyDBDAO() throws DatabaseAccessError 
+	{
+		pool = ConnectionPool.getInstance();
 	}
 	// Creates new company, with unique name
 	@Override

@@ -2,6 +2,7 @@ package dbAccess;
 
 import objects.*;
 import exceptions.*;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,10 +14,12 @@ import java.util.Collection;
 public class CustomerDBDAO implements CustomerDAO
 {
 	// Connection attributes
-	ConnectionPool pool = ConnectionPool.getInstance();
+	ConnectionPool pool;
 	// Constructor, throws SQLException, on failed connection attempt
-	public CustomerDBDAO() throws SQLException
-	{	}
+	public CustomerDBDAO() throws DatabaseAccessError
+	{
+		pool = ConnectionPool.getInstance();
+	}
 	// Creates new Customer from the passed object Customer
 	@Override
 	public void createCustomer(Customer customer) throws WaitingForConnectionInterrupted, 
