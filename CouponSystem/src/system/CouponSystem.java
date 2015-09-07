@@ -3,8 +3,10 @@ package system;
 import java.sql.SQLException;
 
 import dbAccess.ConnectionPool;
+import exceptions.ConnectionCloseException;
+import exceptions.FailedToCloseAllConnectionsException;
+import exceptions.FailedToJoinThreadInterruptedException;
 import threads.DailyCouponExpirationTask;
-import exceptions.InvalidLoginException;
 import facades.*;
 
 public class CouponSystem {
@@ -28,20 +30,29 @@ public class CouponSystem {
 
 	}
 
-	public ClientFacade login(String name, String password, String ClientType)
-			throws InvalidLoginException, SQLException {
+	public ClientFacade login(String name, String password, String ClientType) throws SQLException 
+	{
 		if (ClientType == "customer") {
 			return cust.login(name, password);
 		} else if (ClientType == "company") {
 			return comp.login(name, password);
 		} else
 			return admin.login(name, password);
-
 	}
-	public void shutDown() throws InterruptedException, SQLException{
-		pool.closeAllConnections();
-		task.join();
+	public void shutDown() throws FailedToCloseAllConnectionsException, FailedToJoinThreadInterruptedException
+	{
+		// close all open DB connections
+		try	{
+			pool.closeAllConnections();
+		}catch(ConnectionCloseException e)	{
+			throw new FailedToCloseAllConnectionsException();
+		}
+		// wait for task thread to finish
+		try	{
+			task.join();
+		}catch(InterruptedException e)	{
+			throw new FailedToJoinThreadInterruptedException();
+		}
 		thread.stopTask();
-		
 	}
 }
