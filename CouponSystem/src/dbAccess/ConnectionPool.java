@@ -13,7 +13,7 @@ public class ConnectionPool  {
 	// Singleton object
 	private static ConnectionPool pool;
 	// Connection parameters
-	String url = "jdbc:derby://localhost:1527/Coupondb";
+	String url = "jdbc:derby://localhost:1527/CouponDB";
 	String username = "admin";
 	String password = "admin";
 	// Collections of connections
