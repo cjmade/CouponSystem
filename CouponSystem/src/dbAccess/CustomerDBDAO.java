@@ -360,4 +360,11 @@ public class CustomerDBDAO implements CustomerDAO
 		// 
 		return loginSuccess;
 	}
+	// Get Client's Id by Name
+	public Customer getCustomerByName(String name)
+	{
+		Customer customer = null;
+		// TODO
+		return customer;
+	}
 }

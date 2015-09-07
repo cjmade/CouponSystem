@@ -39,23 +39,23 @@ public class CompanyFacade implements ClientFacade {
 		ArrayList<Company> allCompanies = null;
 		try	{
 			allCompanies = (ArrayList<Company>) compDBDAO.getAllCompanies();
+			// Look for login information in DB
+			for (Company existingCompany : allCompanies) {
+				// If such company exist and password is right - return CompanyFacade
+				if (existingCompany.getCompName().equals(name)
+						&& existingCompany.getPassword().equals(password)) 
+				{
+					// Store Company data for a session
+					currentCompany.setId((new Company(name)).getId());
+					currentCompany.setCompName(name);
+					currentCompany.setPassword(password);
+					break;
+				}
+			}
 		}catch(WaitingForConnectionInterrupted
 				| ClosedConnectionStatementCreationException
 				| ConnectionCloseException e)	{
 			System.out.println(e.getMessage() + ", login attempt failed because of error");
-		}
-		// Look for login information in DB
-		for (Company existingCompany : allCompanies) {
-			// If such company exist and password is right - return
-			// CompanyFacade
-			if (existingCompany.getCompName().equals(name)
-					&& existingCompany.getPassword().equals(password)) {
-				// Store Company data for a session
-				currentCompany.setId((new Company(name)).getId());
-				currentCompany.setCompName(name);
-				currentCompany.setPassword(password);
-				break;
-			}
 		}
 		// Return facade or null
 		return new CompanyFacade();

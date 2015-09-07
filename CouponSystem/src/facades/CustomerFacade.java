@@ -3,123 +3,135 @@ package facades;
 
 import java.util.ArrayList;
 import java.util.Collection;
+
+import objects.Company;
 import objects.CouponType;
 import objects.Customer;
 import objects.Coupon;
 import dbAccess.CouponDBDAO;
 import dbAccess.CustomerDBDAO;
+import exceptions.ClosedConnectionStatementCreationException;
+import exceptions.ConnectionCloseException;
+import exceptions.DatabaseAccessError;
+import exceptions.WaitingForConnectionInterrupted;
 
 public class CustomerFacade implements ClientFacade {
 	// Save Customer Data
-	private Customer cust = new Customer();
+	private Customer cust;
 	// Create Data Base connections:
 	// CustomerDBDAO is only used to read customers
 	private CustomerDBDAO custDBDAO;
 	// CouponDBDAO is only used to read coupons
 	private CouponDBDAO coupDBDAO;
-
 	// Constructor
-	public CustomerFacade() {
+	public CustomerFacade() 
+	{
 		// Instantiate db connections
 		try {
 			custDBDAO = new CustomerDBDAO();
 			coupDBDAO = new CouponDBDAO();
-		} catch (Exception e) {
-			System.out.println("DB connection error");
+			cust = new Customer();
+		} catch (DatabaseAccessError e) {
+			System.out.println(e.getMessage() + ", connection attempt failed");
 		}
 	}
-
-	// Purchase coupon
-	// TODO
-	// Need to add function to coupons
-
+	// Methods
+	// Login
 	@Override
 	public ClientFacade login(String name, String password)
-			throws InvalidLoginException {
-
-		// Check if Customer with this name exists
-		ArrayList<Customer> allCustomers = null;
-		try {
-			allCustomers = (ArrayList<Customer>) custDBDAO.getAllCustomers();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		for (Customer existingCoustomer : allCustomers) {
-			// If such Customer exist and password is right - return
-			// CustomerFacade
-			if (existingCoustomer.getCustName().equals(name)
-					&& existingCoustomer.getPassword().equals(password)) {
-				// Store Customer data for a session
-				cust.setId((new Customer(name)).getId());
-				cust.setCustName(name);
-				cust.setPassword(password);
-				// Return facade
-				return new CustomerFacade();
+	{
+		CustomerFacade facade = null;
+		try	{
+			if(custDBDAO.login(name, password))
+			{
+				facade = new CustomerFacade();
+				// TODO
+				facade.cust = new Customer(name);
 			}
+		}catch(WaitingForConnectionInterrupted
+				| ClosedConnectionStatementCreationException
+				| ConnectionCloseException e)	{
+			System.out.println(e.getMessage() + ", login attempt failed");		
 		}
-		// If such company wasn't found - throw exception
-		throw new InvalidLoginException();
+		return facade;
 	}
-
-	public void purchaseCoupon(Coupon coupon) {
+	// Purchase coupon
+	public void purchaseCoupon(Coupon coupon) 
+	{
 		try {
 			custDBDAO.purchaseCoupon(cust, coupon);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println(e.getMessage() + ", purchase failed");
 		}
 	}
-
-	public void getAllPurchasedCoupons() throws Exception {
+	// Returns all coupons owned by the Customer
+	public void getAllPurchasedCoupons() 
+	{
 		// save coupons here
 		ArrayList<Coupon> coupons = null;
 		// check if there are coupons on the customer db and prints the correct
 		// massage
-		if ((coupons = (ArrayList<Coupon>) custDBDAO.getCoupons(cust)) != null) {
-			System.out.println(cust.getCustName() + " bought those coupons:");
-			for (Coupon coupon : coupons) {
+		try{ 
+			coupons = (ArrayList<Coupon>)custDBDAO.getCoupons(cust);
+			if(coupons.isEmpty())
+			{
+				System.out.println("You didn't buy any coupons yet");
+				return;
+			}
+			System.out.println("You bought those coupons:");
+			for (Coupon coupon : coupons) 
+			{
 				System.out.println(coupon.toString());
 			}
-		} else {
-			System.out.println(cust.getCustName() + "didn't buy nothing yet");
+		}catch(WaitingForConnectionInterrupted | ClosedConnectionStatementCreationException 
+				| ConnectionCloseException e){
+			System.out.println(e.getMessage() + ", failed to get purchased coupons");
 		}
 	}
-
-	public Collection<Coupon> getAllPurchasedCouponsByType(CouponType type)
-			throws Exception {
+	// Returns all coupons of a certain type, purchased by the customer
+	public Collection<Coupon> getAllPurchasedCouponsByType(CouponType type) 
+	{
 		// get the list for all coupons from this type
-		ArrayList<Coupon> AllCouponsByType = (ArrayList<Coupon>) coupDBDAO
-				.getCouponByType(type);
-		// get the list for all coupons for this customer
-		ArrayList<Coupon> customerCoupons = (ArrayList<Coupon>) custDBDAO
-				.getCoupons(cust);
-		// new list for for all coupons from the same type for this customer
-		ArrayList<Coupon> CouponsByType = new ArrayList<Coupon>();
-		for (Coupon coupon : customerCoupons) {
-			if (AllCouponsByType.contains(coupon)) {
-				CouponsByType.add(coupon);
+		ArrayList<Coupon> CouponsByType = null;
+		try	{
+			ArrayList<Coupon>AllCouponsByType = (ArrayList<Coupon>) coupDBDAO.getCouponByType(type);
+			// get the list for all coupons for this customer
+			ArrayList<Coupon> customerCoupons = (ArrayList<Coupon>) custDBDAO.getCoupons(cust);
+			// new list for for all coupons from the same type for this customer
+			CouponsByType = new ArrayList<Coupon>();
+			for (Coupon coupon : customerCoupons) {
+				if (AllCouponsByType.contains(coupon)) {
+					CouponsByType.add(coupon);
+				}
 			}
+		}catch(WaitingForConnectionInterrupted
+				| ClosedConnectionStatementCreationException
+				| ConnectionCloseException e)	{
+			System.out.println(e.getMessage() + ", failed to get coupons");
 		}
-		System.out.println(CouponsByType.toString());
 		return CouponsByType;
 	}
-
 	// Returns Collection of coupons purchased by customer
 	public Collection<Coupon> getAllPurchasedCouponsByPrice(double price)
-			throws Exception {
+	{
+		ArrayList<Coupon> CouponsByPrice = null;
 		// get the list for all coupons from this price
-		ArrayList<Coupon> AllCouponsByPrice = (ArrayList<Coupon>) coupDBDAO
-				.getCouponByPrice(price);
-		// get the list for all coupons for this customer
-		ArrayList<Coupon> customerCoupons = (ArrayList<Coupon>) custDBDAO
-				.getCoupons(cust);
-		// new list for for all coupons from the same price for this customer
-		ArrayList<Coupon> CouponsByPrice = new ArrayList<Coupon>();
-		for (Coupon coupon : customerCoupons) {
-			if (AllCouponsByPrice.contains(coupon)) {
-				CouponsByPrice.add(coupon);
+		ArrayList<Coupon> AllCouponsByPrice;
+		try	{
+			AllCouponsByPrice = (ArrayList<Coupon>) coupDBDAO.getCouponByPrice(price);
+			// get the list for all coupons for this customer
+			ArrayList<Coupon> customerCoupons = (ArrayList<Coupon>) custDBDAO.getCoupons(cust);
+			// new list for for all coupons from the same price for this customer
+			CouponsByPrice = new ArrayList<Coupon>();
+			for (Coupon coupon : customerCoupons) {
+				if (AllCouponsByPrice.contains(coupon)) {
+					CouponsByPrice.add(coupon);
+				}
 			}
+		}catch(WaitingForConnectionInterrupted
+				| ClosedConnectionStatementCreationException
+				| ConnectionCloseException e)	{
+			System.out.println(e.getMessage() + ", failed to get coupons");
 		}
 		return CouponsByPrice;
 	}
