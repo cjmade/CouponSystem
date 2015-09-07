@@ -10,6 +10,7 @@ import java.util.Collection;
 
 import exceptions.ClosedConnectionStatementCreationException;
 import exceptions.ConnectionCloseException;
+import exceptions.DatabaseAccessError;
 import exceptions.WaitingForConnectionInterrupted;
 import exceptions.FailedToCreateCouponException;
 import exceptions.GetConnectionWaitInteruptedException;
@@ -19,10 +20,11 @@ import objects.CouponType;
 public class CouponDBDAO implements CouponDAO {
 
 	// Connection attributes
-	ConnectionPool pool = ConnectionPool.getInstance();
+	ConnectionPool pool;
 
 	// Constructor, throws SQLException, on failed connection attempt
-	public CouponDBDAO() throws SQLException {
+	public CouponDBDAO() throws DatabaseAccessError {
+		pool = ConnectionPool.getInstance();
 	}
 
 	// Adds coupon to a coupons list

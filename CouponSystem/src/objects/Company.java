@@ -2,6 +2,7 @@ package objects;
 
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 
 public class Company {
@@ -48,7 +49,7 @@ public class Company {
 	public void setEmail(String email) {
 		this.email = email;
 	}
-	public ArrayList<Coupon> getCoupons()   {
+	public Collection<Coupon> getCoupons()   {
 		return coupons;
 	}
 	public void setCoupons(ArrayList<Coupon> coupons) {

@@ -2,6 +2,7 @@ package facades;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 
 import objects.*;
 import dbAccess.*;
@@ -17,27 +18,33 @@ public class CompanyFacade implements ClientFacade {
 	private CompanyDBDAO compDBDAO;
 
 	// Constructor
-	public CompanyFacade() throws SQLException {
+	public CompanyFacade() 
+	{
 		// Instantiate db connections
-		coupDBDAO = new CouponDBDAO();
-		compDBDAO = new CompanyDBDAO();
+		try
+		{
+			coupDBDAO = new CouponDBDAO();
+			compDBDAO = new CompanyDBDAO();
+		}catch(DatabaseAccessError e)
+		{
+			System.out.println(e.getMessage() + ", failed to connect");
+		}
 	}
-
 	// Methods
-
 	// Login method, on successful login returns ClientFacade object
 	// or throws an exception
 	@Override
-	public ClientFacade login(String name, String password)
-			throws InvalidLoginException, SQLException {
+	public ClientFacade login(String name, String password) {
 		// Check if company with this name exists
 		ArrayList<Company> allCompanies = null;
-		try {
+		try	{
 			allCompanies = (ArrayList<Company>) compDBDAO.getAllCompanies();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		}catch(WaitingForConnectionInterrupted
+				| ClosedConnectionStatementCreationException
+				| ConnectionCloseException e)	{
+			System.out.println(e.getMessage() + ", login attempt failed because of error");
 		}
+		// Look for login information in DB
 		for (Company existingCompany : allCompanies) {
 			// If such company exist and password is right - return
 			// CompanyFacade
@@ -47,120 +54,111 @@ public class CompanyFacade implements ClientFacade {
 				currentCompany.setId((new Company(name)).getId());
 				currentCompany.setCompName(name);
 				currentCompany.setPassword(password);
-				// Return facade
-				return new CompanyFacade();
+				break;
 			}
 		}
-		// If such company wasn't found - throw exception
-		throw new InvalidLoginException();
+		// Return facade or null
+		return new CompanyFacade();
 	}
-
 	// Create new coupon
-	private void createCoupon(Coupon newCoupon) throws Exception {
-		try {
-			// add coupon to COUPON list
+	private void createCoupon(Coupon newCoupon)
+	{
+		try	{
 			coupDBDAO.createCoupon(newCoupon);
-			// add coupon to COMPANY_COUPON
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
+		}catch(WaitingForConnectionInterrupted | ConnectionCloseException
+				| FailedToCreateCouponException e)	{
+			System.out.println(e.getMessage() + ", failed to create coupon");
+		}		
 	}
-
 	// Removes coupon, if it exists
-	private void removeCoupon(Coupon coupon) throws Exception {
-		boolean couponExist = false;
-		// Create new AllayList of all existing coupons
-		ArrayList<Coupon> allCoupons = getAllCoupons();
-		// Check that newCoupon does not yet exist BY NAME
-		for (Coupon existingCoupon : allCoupons) {
-			if (existingCoupon.getTitle().equals(coupon.getTitle())) {
-				couponExist = true;
-				break;
-			}
-		}
-		// if Coupon exists - remove coupons, remove coupon
-		if (couponExist) {
-			// TODO remove coupon from every customer, that bought it
-			// Remove coupon
+	private void removeCoupon(Coupon coupon)
+	{
+		try	{
 			coupDBDAO.removeCoupon(coupon);
-		} else {
-			// throw exception
-			throw new ObjectDontExistException();
+		}catch(WaitingForConnectionInterrupted
+				| ClosedConnectionStatementCreationException
+				| ConnectionCloseException e)	{
+			System.out.println(e.getMessage() + ", failed to remove coupon");
 		}
 	}
-
 	// Update existing coupon
-	private void updateCoupon(Coupon coupon) throws Exception {
-		boolean couponExist = false;
-		// Create new AllayList of all existing coupons
-		ArrayList<Coupon> allCoupons = getAllCoupons();
-		// Check that newCoupon does not yet exist BY NAME
-		for (Coupon existingCoupon : allCoupons) {
-			if (existingCoupon.getTitle().equals(coupon.getTitle())) {
-				couponExist = true;
-				break;
-			}
-		}
-		// if Coupon exists - update it
-		if (couponExist)
+	private void updateCoupon(Coupon coupon)
+	{
+		try	{
 			coupDBDAO.updateCoupon(coupon);
-		else {
-			// throw exception
-			throw new ObjectDontExistException();
+		}catch(WaitingForConnectionInterrupted
+				| ClosedConnectionStatementCreationException
+				| ConnectionCloseException e)	{
+			System.out.println(e.getMessage() + ", failed to update coupon");
 		}
 	}
-
 	// Find Coupon by id, in company's coupons
-	private Coupon getCoupon(int id) throws Exception {
-		return coupDBDAO.getCoupon(id);
+	private Coupon getCoupon(int id) 
+	{
+		Coupon coupon = null;
+		try	{
+			coupon = coupDBDAO.getCoupon(id);
+		}catch(WaitingForConnectionInterrupted
+				| ClosedConnectionStatementCreationException
+				| ConnectionCloseException e)		{
+			System.out.println(e.getMessage() + ", failed to update coupon");
+		}
+		return coupon;
 	}
-
-	// Returns Collection<Coupon> of all existing coupons
-	private ArrayList<Coupon> getAllCoupons() throws Exception {
-		return (ArrayList<Coupon>) compDBDAO.getCoupons(currentCompany);
+	// Returns Collection<Coupon> of all existing coupons of the company
+	private Collection<Coupon> getAllCoupons() 
+	{
+		ArrayList<Coupon> allCoupons = null;
+		try	{
+			allCoupons = (ArrayList<Coupon>) compDBDAO.getCoupons(currentCompany);
+		}catch(WaitingForConnectionInterrupted
+				| ClosedConnectionStatementCreationException
+				| ConnectionCloseException e)	{
+			System.out.println(e.getMessage() + ", failed to get coupons");
+		}
+		return allCoupons;
 	}
-
-	public ArrayList<Coupon> getCouponByType(CouponType type) throws Exception {
-		ArrayList<Coupon> AllCouponsByType = (ArrayList<Coupon>) coupDBDAO
-				.getCouponByType(type);
-		ArrayList<Coupon> companyCoupons = currentCompany.getCoupons();
-		ArrayList<Coupon> CouponsByType = new ArrayList<Coupon>();
-		for (Coupon coupon : companyCoupons) {
-			if (AllCouponsByType.contains(coupon)) {
-				CouponsByType.add(coupon);
+	// Returns Collection<Coupon> of all existing coupons of the company of a certain type
+	public Collection<Coupon> getCouponByType(CouponType type) 
+	{
+		ArrayList<Coupon> CouponsByType = null;
+		try	{
+			ArrayList<Coupon> AllCouponsByType = (ArrayList<Coupon>) coupDBDAO.getCouponByType(type);
+			ArrayList<Coupon> companyCoupons = (ArrayList<Coupon>) currentCompany.getCoupons();
+			CouponsByType = new ArrayList<Coupon>();
+			for (Coupon coupon : companyCoupons) {
+				if (AllCouponsByType.contains(coupon)) {
+					CouponsByType.add(coupon);
+				}
 			}
+		}catch(WaitingForConnectionInterrupted
+				| ClosedConnectionStatementCreationException
+				| ConnectionCloseException e)	{
+			System.out.println(e.getMessage() + ", failed to get coupons collection");
 		}
 		return CouponsByType;
-
 	}
-
-/*	this seems to be unneeded
- * public ArrayList<Coupon> getCouponTillPrice(double price) throws Exception {
-		ArrayList<Coupon> AllCouponsByPrice = (ArrayList<Coupon>) coupDBDAO
-				.getCouponTillPrice(price);
-		ArrayList<Coupon> companyCoupons = currentCompany.getCoupons();
-		ArrayList<Coupon> CouponsByPrice = new ArrayList<Coupon>();
-		for (Coupon coupon : companyCoupons) {
-			if (AllCouponsByPrice.contains(coupon)) {
-				CouponsByPrice.add(coupon);
+	// Returns Collection<Coupon> of all existing coupons of the company valid until date
+	public ArrayList<Coupon> getCouponTillDate(String date) 
+	{
+		ArrayList<Coupon> CouponsByDate = null;
+		try
+		{
+			ArrayList<Coupon> AllCouponsByDate = (ArrayList<Coupon>) coupDBDAO.getCouponTillDate(date);
+			ArrayList<Coupon> companyCoupons = (ArrayList<Coupon>) currentCompany.getCoupons();
+			CouponsByDate = new ArrayList<Coupon>();
+			for (Coupon coupon : companyCoupons) 
+			{
+				if (AllCouponsByDate.contains(coupon)) 
+				{
+					CouponsByDate.add(coupon);
+				}
 			}
-		}
-		return CouponsByPrice;
-
-	}*/
-
-	public ArrayList<Coupon> getCouponTillDate(String date) throws Exception {
-		ArrayList<Coupon> AllCouponsByDate = (ArrayList<Coupon>) coupDBDAO
-				.getCouponTillDate(date);
-		ArrayList<Coupon> companyCoupons = currentCompany.getCoupons();
-		ArrayList<Coupon> CouponsByDate = new ArrayList<Coupon>();
-		for (Coupon coupon : companyCoupons) {
-			if (AllCouponsByDate.contains(coupon)) {
-				CouponsByDate.add(coupon);
-			}
+		}catch(WaitingForConnectionInterrupted
+				| ClosedConnectionStatementCreationException
+				| ConnectionCloseException e)	{
+			System.out.println(e.getMessage() + ", failed to get coupons");
 		}
 		return CouponsByDate;
-
 	}
 }
