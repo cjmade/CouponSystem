@@ -1,6 +1,8 @@
 package facades;
 
+import java.util.ArrayList;
 import java.util.Collection;
+
 import dbAccess.*;
 import objects.*;
 import exceptions.*;
@@ -26,9 +28,7 @@ public class AdminFacade implements ClientFacade
 			System.out.println(e.getMessage());
 		}
 	}
-	
 	/// Methods
-
 	// Login method, on successful login returns ClientFacade object
 	@Override
 	public ClientFacade login(String name, String password)
@@ -42,60 +42,37 @@ public class AdminFacade implements ClientFacade
 		// else - create and return new Facade Object
 		return new AdminFacade();
 	}
-	
 	// Create new company
 	@SuppressWarnings("unused")
 	private void createCompany(Company newCompany)
 	{
-		boolean flag = false;
 		try	{
 			compDBDAO.createCompany(newCompany);
-			flag = true;
-		}catch(WaitingForConnectionInterrupted e)	{
-			System.out.print(e.getMessage());
-		}catch(FailedToCreateCompanyException e)	{
-			System.out.print(e.getMessage());
+		}catch(WaitingForConnectionInterrupted | FailedToCreateCompanyException e)	{
+			System.out.print(e.getMessage() + ", company wasn't created");
 		}
-		if(flag)
-			System.out.println(", company wasn't created");
 	}
 	// Removes company and all its coupons, if company exists
 	@SuppressWarnings("unused")
 	private void removeCompany(Company company)
 	{
-		boolean flag = false;
 		try	{
 			compDBDAO.removeCompany(company);
-			flag = true;
-		}catch(WaitingForConnectionInterrupted e)	{
-			System.out.print(e.getMessage());
-		}catch(ClosedConnectionStatementCreationException e)	{
-			System.out.print(e.getMessage());
-		}catch(ConnectionCloseException e)	{
-			System.out.print(e.getMessage());
+		}catch(WaitingForConnectionInterrupted | ConnectionCloseException 
+				| ClosedConnectionStatementCreationException e)	{
+			System.out.print(e.getMessage() + ", company wasn't removed");
 		}
-		if(flag)
-			System.out.println(", company wasn't removed");
 	}
 	// Update existing company
 	@SuppressWarnings("unused")
 	private void updateCompany(Company company)
 	{
-		boolean flag = false;
 		try	{
 			compDBDAO.updateCompany(company);
-			flag = true;
-		}catch(NothingToUpdateException e)	{
-			System.out.print(e.getMessage());
-		}catch(WaitingForConnectionInterrupted e)	{
-			System.out.print(e.getMessage());
-		}catch(ClosedConnectionStatementCreationException e)	{
-			System.out.print(e.getMessage());
-		}catch(UpdateDidNotExecuteException e)	{
-			System.out.print(e.getMessage());
+		}catch(NothingToUpdateException | WaitingForConnectionInterrupted 
+				| ClosedConnectionStatementCreationException | UpdateDidNotExecuteException e)	{
+			System.out.print(e.getMessage() + ", company wasn't updated");
 		}
-		if(flag)
-			System.out.println(", company wasn't updated");
 	}
 	// Find Company by id
 	@SuppressWarnings("unused")
@@ -104,12 +81,9 @@ public class AdminFacade implements ClientFacade
 		Company company = null;
 		try	{
 			company = compDBDAO.getCompany(id);
-		}catch(WaitingForConnectionInterrupted e)	{
-			System.out.print(e.getMessage());
-		}catch(ClosedConnectionStatementCreationException e)	{
-			System.out.print(e.getMessage());
-		}catch(ConnectionCloseException e)	{
-			System.out.print(e.getMessage());
+		}catch(WaitingForConnectionInterrupted 
+				| ClosedConnectionStatementCreationException | ConnectionCloseException e)	{
+			System.out.print(e.getMessage() + ", failed to get company");
 		}
 		return company;
 	}
@@ -117,37 +91,79 @@ public class AdminFacade implements ClientFacade
 	@SuppressWarnings("unused")
 	private Collection<Company> getAllCompanies()
 	{
-		return compDBDAO.getAllCompanies();
+		ArrayList<Company> allCompanies = null;
+		try	{
+			allCompanies = (ArrayList<Company>)compDBDAO.getAllCompanies();
+		}catch(WaitingForConnectionInterrupted 
+				| ClosedConnectionStatementCreationException | ConnectionCloseException e)	{
+			System.out.print(e.getMessage() + ", failed to get companies collection");
+		}
+		return allCompanies;
 	}
 	// Create new Customer
 	@SuppressWarnings("unused")
 	private void createCustomer(Customer newCustomer)
 	{
-		custDBDAO.createCustomer(newCustomer);
+		try	{
+			custDBDAO.createCustomer(newCustomer);
+		}catch(WaitingForConnectionInterrupted
+				| FailedToCreateCustomerException | ConnectionCloseException e)	{
+			System.out.print(e.getMessage() + ", failed to create customer");
+		}
+
 	}
 	// Removes customer and all his coupons, if exists
 	@SuppressWarnings("unused")
 	private void removeCustomer(Customer customer)
 	{
-		custDBDAO.removeCustomer(customer);
+		try	{
+			custDBDAO.removeCustomer(customer);
+		}catch(WaitingForConnectionInterrupted
+				| ClosedConnectionStatementCreationException
+				| ConnectionCloseException e)	{
+			System.out.println(e.getMessage() + ", failed to remove customer");
+		}
 	}
 	// Update existing customer
 	@SuppressWarnings("unused")
 	private void updateCustomer(Customer customer)
 	{
-		custDBDAO.updateCustomer(customer);
+		try	{
+			custDBDAO.updateCustomer(customer);
+		}catch(WaitingForConnectionInterrupted
+				| ClosedConnectionStatementCreationException
+				| ConnectionCloseException e)	{
+			System.out.println(e.getMessage() + ", failed to update customer");
+		}
 	}
 	// Find Customer by id
 	@SuppressWarnings("unused")
 	private Customer getCustomer(int id)
 	{
-		return custDBDAO.getCustomer(id);
+		Customer customer = null;
+		try	{
+			customer = custDBDAO.getCustomer(id);
+		}catch(WaitingForConnectionInterrupted
+				| ClosedConnectionStatementCreationException
+				| ConnectionCloseException e)	{
+			System.out.println(e.getMessage() + "failed to get customer");
+		}
+		return customer;
 	}
 	// Returns Collection<Customer> of all existing customers
 	@SuppressWarnings("unused")
 	private Collection<Customer> getAllCustomers()
 	{
-		// Can be null!
-		return custDBDAO.getAllCustomers();
+		ArrayList<Customer> allCustomers = null;
+		try
+		{
+			allCustomers = (ArrayList<Customer>) custDBDAO.getAllCustomers();
+		}catch(WaitingForConnectionInterrupted
+				| ClosedConnectionStatementCreationException
+				| ConnectionCloseException e)
+		{
+			System.out.println(e.getMessage() + "failed to get customers collection");
+		}
+		return allCustomers;
 	}
 }
