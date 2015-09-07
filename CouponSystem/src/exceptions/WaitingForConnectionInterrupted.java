@@ -4,6 +4,6 @@ public class WaitingForConnectionInterrupted extends Exception
 {
 	public WaitingForConnectionInterrupted()
 	{
-		super("Connection received after waiting");
+		super("Failed to connect to DB");
 	}
 }

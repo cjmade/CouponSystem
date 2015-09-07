@@ -49,13 +49,12 @@ public class AdminFacade implements ClientFacade
 	@SuppressWarnings("unused")
 	private void createCompany(Company newCompany)
 	{
-		try
-		{
+		try	{
 			compDBDAO.createCompany(newCompany);
-		}catch(WaitingForConnectionInterrupted | FailedToCreateCompanyException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		}catch(WaitingForConnectionInterrupted e)	{
+			System.out.println(e.getMessage() + ", company wasn't created");
+		}catch(FailedToCreateCompanyException e)	{
+			System.out.println(e.getMessage());
 		}
 	}
 	// Removes company and all its coupons, if company exists
@@ -63,7 +62,6 @@ public class AdminFacade implements ClientFacade
 	private void removeCompany(Company company)
 	{
 		compDBDAO.removeCompany(company);
-
 	}
 	// Update existing company
 	@SuppressWarnings("unused")

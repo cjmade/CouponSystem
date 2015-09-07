@@ -56,27 +56,48 @@ public class CompanyDBDAO implements CompanyDAO {
 	}
 	// Remove existing company
 	@Override
-	public void removeCompany(Company company) throws SQLException, Exception {
-		Connection connection = pool.getConnection();
+	public void removeCompany(Company company) throws WaitingForConnectionInterrupted,
+		ClosedConnectionStatementCreationException, ConnectionCloseException 
+	{
+		Connection connection;
+		try	{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e)	{
+			throw new WaitingForConnectionInterrupted();
+		}
 		// Get company ID from DB
-		String sqlRequest = "SELECT ID FROM APP.COMPANY WHERE COMP_NAME='"
-				+ company.getCompName() + "'";
-		Statement statement = connection.createStatement();
-		ResultSet idFound = statement.executeQuery(sqlRequest);
-		idFound.next();
-		company.setId(idFound.getLong("ID"));
-		// Prepare message to remove purchase history
-		sqlRequest = "DELETE FROM APP.COMPANY_COUPON WHERE COMP_ID = "
-				+ company.getId();
-		// Remove all customer purchase history
-		statement.execute(sqlRequest);
-		// Prepare SQL message to remove the company
-		sqlRequest = "DELETE FROM APP.COMPANY WHERE ID=" + company.getId();
-		// Remove the company himself
-		statement.execute(sqlRequest);
-		System.out.println(company.toString() + " was deleted");
-		idFound.close();
-		statement.close();
+		String sqlRequest;
+		Statement statement;
+		ResultSet idFound;
+		try
+		{
+			sqlRequest = "SELECT ID FROM APP.COMPANY WHERE COMP_NAME='"+ company.getCompName() + "'";
+			statement = connection.createStatement();
+			idFound = statement.executeQuery(sqlRequest);
+			idFound.next();
+			company.setId(idFound.getLong("ID"));
+			// Prepare message to remove purchase history
+			sqlRequest = "DELETE FROM APP.COMPANY_COUPON WHERE COMP_ID = "
+					+ company.getId();
+			// Remove all customer purchase history
+			statement.execute(sqlRequest);
+			// Prepare SQL message to remove the company
+			sqlRequest = "DELETE FROM APP.COMPANY WHERE ID=" + company.getId();
+			// Remove the company himself
+			statement.execute(sqlRequest);
+			System.out.println(company.toString() + " was deleted");
+		}catch(SQLException e)	{
+			throw new ClosedConnectionStatementCreationException();
+		}
+		// Close connections
+		try
+		{
+			idFound.close();
+			statement.close();
+		}catch(SQLException e)
+		{
+			throw new ConnectionCloseException();
+		}
 		pool.returnConnection(connection);
 	}
 	// Update existing company

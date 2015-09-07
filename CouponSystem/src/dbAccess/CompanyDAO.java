@@ -15,7 +15,7 @@ import objects.Coupon;
 public interface CompanyDAO {
 	
 	void createCompany(Company company) throws WaitingForConnectionInterrupted, FailedToCreateCompanyException;
-	void removeCompany(Company company) throws SQLException, Exception;
+	void removeCompany(Company company) throws WaitingForConnectionInterrupted, ClosedConnectionStatementCreationException, ConnectionCloseException;
 	void updateCompany(Company company) throws NothingToUpdateException, WaitingForConnectionInterrupted, ClosedConnectionStatementCreationException, UpdateDidNotExecuteException;
 	Company getCompany(long id) throws WaitingForConnectionInterrupted, ClosedConnectionStatementCreationException, ConnectionCloseException;
 	Collection<Company> getAllCompanies() throws WaitingForConnectionInterrupted, ClosedConnectionStatementCreationException, ConnectionCloseException;
