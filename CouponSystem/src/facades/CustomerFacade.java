@@ -49,7 +49,7 @@ public class CustomerFacade implements ClientFacade {
 			}
 		}catch(WaitingForConnectionInterrupted
 				| ClosedConnectionStatementCreationException
-				| ConnectionCloseException e)	{
+				| ConnectionCloseException  e)	{
 			System.out.println(e.getMessage() + ", login attempt failed");		
 		}
 		return this;
