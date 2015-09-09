@@ -1,10 +1,12 @@
 package facades;
 
 
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import objects.Company;
+
 import objects.CouponType;
 import objects.Customer;
 import objects.Coupon;
@@ -24,7 +26,7 @@ public class CustomerFacade implements ClientFacade {
 	// CouponDBDAO is only used to read coupons
 	private CouponDBDAO coupDBDAO;
 	// Constructor
-	public CustomerFacade() 
+	public CustomerFacade() throws SQLException 
 	{
 		// Instantiate db connections
 		try {
@@ -38,7 +40,7 @@ public class CustomerFacade implements ClientFacade {
 	// Methods
 	// Login
 	@Override
-	public ClientFacade login(String name, String password)
+	public ClientFacade login(String name, String password) 
 	{
 		CustomerFacade facade = null;
 		try	{
@@ -50,7 +52,7 @@ public class CustomerFacade implements ClientFacade {
 			}
 		}catch(WaitingForConnectionInterrupted
 				| ClosedConnectionStatementCreationException
-				| ConnectionCloseException e)	{
+				| ConnectionCloseException | SQLException  e)	{
 			System.out.println(e.getMessage() + ", login attempt failed");		
 		}
 		return facade;
@@ -95,13 +97,17 @@ public class CustomerFacade implements ClientFacade {
 		ArrayList<Coupon> CouponsByType = null;
 		try	{
 			ArrayList<Coupon>AllCouponsByType = (ArrayList<Coupon>) coupDBDAO.getCouponByType(type);
+System.out.println(coupDBDAO.getCouponByType(type));
 			// get the list for all coupons for this customer
+			cust=custDBDAO.getCustomer(cust.getCustName());
 			ArrayList<Coupon> customerCoupons = (ArrayList<Coupon>) custDBDAO.getCoupons(cust);
+			System.out.println(custDBDAO.getCoupons(cust).toString());
 			// new list for for all coupons from the same type for this customer
 			CouponsByType = new ArrayList<Coupon>();
 			for (Coupon coupon : customerCoupons) {
-				if (AllCouponsByType.contains(coupon)) {
+				if (AllCouponsByType.contains(coupon)||AllCouponsByType.size()==customerCoupons.size()) {
 					CouponsByType.add(coupon);
+					System.out.println(CouponsByType.toString());
 				}
 			}
 		}catch(WaitingForConnectionInterrupted
@@ -109,6 +115,7 @@ public class CustomerFacade implements ClientFacade {
 				| ConnectionCloseException e)	{
 			System.out.println(e.getMessage() + ", failed to get coupons");
 		}
+		System.out.println(CouponsByType.toString());
 		return CouponsByType;
 	}
 	// Returns Collection of coupons purchased by customer
@@ -133,6 +140,7 @@ public class CustomerFacade implements ClientFacade {
 				| ConnectionCloseException e)	{
 			System.out.println(e.getMessage() + ", failed to get coupons");
 		}
+		System.out.println(CouponsByPrice.toString());
 		return CouponsByPrice;
 	}
 }

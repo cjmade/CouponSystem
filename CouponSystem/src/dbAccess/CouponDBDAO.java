@@ -23,7 +23,7 @@ public class CouponDBDAO implements CouponDAO {
 	ConnectionPool pool;
 
 	// Constructor, throws SQLException, on failed connection attempt
-	public CouponDBDAO() throws DatabaseAccessError {
+	public CouponDBDAO() throws DatabaseAccessError, SQLException {
 		pool = ConnectionPool.getInstance();
 	}
 

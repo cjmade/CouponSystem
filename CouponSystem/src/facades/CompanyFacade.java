@@ -18,14 +18,14 @@ public class CompanyFacade implements ClientFacade {
 	private CompanyDBDAO compDBDAO;
 
 	// Constructor
-	public CompanyFacade() 
+	public CompanyFacade() throws DatabaseAccessError 
 	{
 		// Instantiate db connections
 		try
 		{
 			coupDBDAO = new CouponDBDAO();
 			compDBDAO = new CompanyDBDAO();
-		}catch(DatabaseAccessError e)
+		}catch(SQLException e)
 		{
 			System.out.println(e.getMessage() + ", failed to connect");
 		}
@@ -34,7 +34,7 @@ public class CompanyFacade implements ClientFacade {
 	// Login method, on successful login returns ClientFacade object
 	// or throws an exception
 	@Override
-	public ClientFacade login(String name, String password) {
+	public ClientFacade login(String name, String password) throws DatabaseAccessError {
 		// Check if company with this name exists
 		ArrayList<Company> allCompanies = null;
 		try	{

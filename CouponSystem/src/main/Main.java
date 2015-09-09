@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import objects.*;
+import system.CouponSystem;
 import threads.DailyCouponExpirationTask;
 import dbAccess.*; 
 import facades.*;
@@ -14,29 +15,35 @@ import facades.*;
 // comment
 public class Main
 {
-	//Connection connection=new Connection();
-	@SuppressWarnings("unused")
+	
+	
 	public static void main(String[] args) throws Exception
 	{	
-		// Connection required
 		CouponDBDAO coupDB = new CouponDBDAO();
-		CustomerFacade testFacade = new CustomerFacade();
+		CustomerDBDAO custDB=new CustomerDBDAO();
+		CompanyDBDAO compDB=new CompanyDBDAO();
 		
-		// Login
-		testFacade.login("Shay", "123456");
+		CustomerFacade custFacade = new CustomerFacade();
+		CompanyFacade compFacade=new CompanyFacade();
+		AdminFacade admin=new AdminFacade();
 		
-		// Prepare some constants
-		double price = 1.0;
-		long couponID = 2L;
-		Coupon coupon = coupDB.getCoupon(couponID);
+		Customer cust=new Customer("Shay");
+		//cust.setId(1);
+		Company comp= new Company();
+		Coupon coup=new Coupon();
 		
-		// Check pre-manipulation status
-		System.out.println(coupon.toString());
-System.out.println("-nothing-");
-		testFacade.getAllPurchasedCoupons();
-System.out.println("-update-");	
-/*		// Manipulate
-		testFacade.purchaseCoupon(coupon);*/
+		
+		CouponSystem coupon= CouponSystem.getInstance();
+		custFacade=(CustomerFacade) coupon.login("Shay", "123456", "customer");
+		//custFacade.getAllPurchasedCoupons();
+		//custFacade.getAllPurchasedCouponsByPrice(45.0);
+		custFacade.getAllPurchasedCouponsByType(CouponType.FOOD);
+		//System.out.println(custDB.getCustomer("Shay").toString());
+		//System.out.println(custDB.getCoupons(cust).toString());
+
+
+		
+		
 		
 	}
 	}	

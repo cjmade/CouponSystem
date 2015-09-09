@@ -16,7 +16,7 @@ public class CustomerDBDAO implements CustomerDAO
 	// Connection attributes
 	ConnectionPool pool;
 	// Constructor, throws SQLException, on failed connection attempt
-	public CustomerDBDAO() throws DatabaseAccessError
+	public CustomerDBDAO() throws DatabaseAccessError, SQLException
 	{
 		pool = ConnectionPool.getInstance();
 	}
@@ -367,4 +367,44 @@ public class CustomerDBDAO implements CustomerDAO
 		// TODO
 		return customer;
 	}
-}
+	
+	public Customer getCustomer(String name) throws WaitingForConnectionInterrupted, 
+	ClosedConnectionStatementCreationException, ConnectionCloseException
+{
+	// DB Connection
+	Connection connection;
+	try	{
+		connection = pool.getConnection();
+	}catch(GetConnectionWaitInteruptedException e)	{
+		throw new WaitingForConnectionInterrupted();
+	}
+	// Prepare and execute statement
+	Statement statement;
+	// Create new customer to store what will be found
+	Customer customerFound;
+	ResultSet customerSetFound;
+	try	{
+		statement = connection.createStatement();
+		customerFound = new Customer();
+		// Find customer with ID
+		customerSetFound = statement.executeQuery("SELECT ID, CUST_NAME, PASSWORD FROM APP.CUSTOMER WHERE CUST_NAME= '" + name+"'");
+		// Store customer
+		customerSetFound.next();
+		//customerFound = (Customer)customerSetFound;
+		customerFound.setId(customerSetFound.getLong("ID"));
+		customerFound.setCustName(name);
+		customerFound.setPassword(customerSetFound.getString("PASSWORD"));
+	}catch(SQLException e)	{
+		throw new ClosedConnectionStatementCreationException();
+	}
+	// Close connections
+	try	{
+		customerSetFound.close();
+		statement.close();
+	}catch(SQLException e)	{
+		throw new ConnectionCloseException();
+	}
+	pool.returnConnection(connection);
+	// Return it
+	return customerFound;
+}}

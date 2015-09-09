@@ -1,5 +1,6 @@
 package facades;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -16,14 +17,14 @@ public class AdminFacade implements ClientFacade
 	private CustomerDBDAO custDBDAO;
 	
 	// Constructor
-	public AdminFacade()
+	public AdminFacade() throws DatabaseAccessError
 	{
 		// Instantiate db connections
 		try
 		{
 			compDBDAO = new CompanyDBDAO();
 			custDBDAO = new CustomerDBDAO();
-		}catch(DatabaseAccessError e)
+		}catch(SQLException e)
 		{
 			System.out.println(e.getMessage());
 		}
@@ -31,7 +32,7 @@ public class AdminFacade implements ClientFacade
 	/// Methods
 	// Login method, on successful login returns ClientFacade object
 	@Override
-	public ClientFacade login(String name, String password)
+	public ClientFacade login(String name, String password) throws DatabaseAccessError
 	{
 		// If username/password wrong - throw exception
 		if(name != "admin" || password != "1234")

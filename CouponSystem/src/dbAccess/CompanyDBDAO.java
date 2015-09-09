@@ -14,7 +14,7 @@ public class CompanyDBDAO implements CompanyDAO {
 	ConnectionPool pool;
 
 	// Constructor, throws SQLException, on failed connection attempt
-	public CompanyDBDAO() throws DatabaseAccessError 
+	public CompanyDBDAO() throws DatabaseAccessError, SQLException 
 	{
 		pool = ConnectionPool.getInstance();
 	}

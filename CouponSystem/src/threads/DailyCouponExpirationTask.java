@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.lang.Thread;
+import java.sql.SQLException;
 
 import objects.Coupon;
 
@@ -17,11 +18,11 @@ public class DailyCouponExpirationTask implements Runnable {
 	private long millis = 60 * 60 * 24 * 1000;
 	private CouponDBDAO coupDBDAO;
 	// Constructor
-	public DailyCouponExpirationTask()
+	public DailyCouponExpirationTask() throws DatabaseAccessError
 	{
 		try	{
 			coupDBDAO = new CouponDBDAO();
-		}catch(DatabaseAccessError e)	{
+		}catch(SQLException e)	{
 			System.out.println(e.getMessage() + ", failed to establish connection to DB");
 		}
 	}
