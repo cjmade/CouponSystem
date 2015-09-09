@@ -145,7 +145,7 @@ public class CustomerDBDAO implements CustomerDAO
 		}catch(GetConnectionWaitInteruptedException e)	{
 			throw new WaitingForConnectionInterrupted();
 		}
-		// Prepare SQL message to insert new company
+		// Prepare and execute SQL message to insert new company
 		String insertSQL = "INSERT INTO APP.CUSTOMER_COUPON " + "(CUST_ID, COUPON_ID) VALUES" + "(?,?)";
 		PreparedStatement preparedStatement;
 		try	{
