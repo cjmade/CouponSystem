@@ -42,20 +42,17 @@ public class CustomerFacade implements ClientFacade {
 	@Override
 	public ClientFacade login(String name, String password) 
 	{
-		CustomerFacade facade = null;
 		try	{
 			if(custDBDAO.login(name, password))
 			{
-				facade = new CustomerFacade();
-				// TODO
-				facade.cust = new Customer(name);
+				this.cust = new Customer(name);
 			}
 		}catch(WaitingForConnectionInterrupted
 				| ClosedConnectionStatementCreationException
-				| ConnectionCloseException | SQLException  e)	{
+				| ConnectionCloseException e)	{
 			System.out.println(e.getMessage() + ", login attempt failed");		
 		}
-		return facade;
+		return this;
 	}
 	// Purchase coupon
 	public void purchaseCoupon(Coupon coupon) 

@@ -41,7 +41,7 @@ public class AdminFacade implements ClientFacade
 			return null;
 		}
 		// else - create and return new Facade Object
-		return new AdminFacade();
+		return this;
 	}
 	// Create new company
 	@SuppressWarnings("unused")

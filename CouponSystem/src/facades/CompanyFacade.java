@@ -35,6 +35,7 @@ public class CompanyFacade implements ClientFacade {
 	// or throws an exception
 	@Override
 	public ClientFacade login(String name, String password) throws DatabaseAccessError {
+		// TODO
 		// Check if company with this name exists
 		ArrayList<Company> allCompanies = null;
 		try	{
@@ -58,7 +59,7 @@ public class CompanyFacade implements ClientFacade {
 			System.out.println(e.getMessage() + ", login attempt failed because of error");
 		}
 		// Return facade or null
-		return new CompanyFacade();
+		return this;
 	}
 	// Create new coupon
 	private void createCoupon(Coupon newCoupon)
