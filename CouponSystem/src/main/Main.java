@@ -35,11 +35,10 @@ public class Main
 		
 		CouponSystem coupon= CouponSystem.getInstance();
 		custFacade=(CustomerFacade) coupon.login("Shay", "123456", "customer");
-		//custFacade.getAllPurchasedCoupons();
-		//custFacade.getAllPurchasedCouponsByPrice(45.0);
+		custFacade.getAllPurchasedCoupons();
+		custFacade.getAllPurchasedCouponsByPrice(33.0);
 		custFacade.getAllPurchasedCouponsByType(CouponType.FOOD);
-		//System.out.println(custDB.getCustomer("Shay").toString());
-		//System.out.println(custDB.getCoupons(cust).toString());
+		
 
 
 		
