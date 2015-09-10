@@ -62,11 +62,13 @@ public class CompanyFacade implements ClientFacade {
 		return this;
 	}
 	// Create new coupon
-	public void createCoupon(Coupon newCoupon) throws ConnectionCloseException, ClosedConnectionStatementCreationException
+	public void createCoupon(Coupon newCoupon) throws ConnectionCloseException, ClosedConnectionStatementCreationException, SQLException
 	{
 		try	{
 			currentCompany = compDBDAO.getCompany(currentCompany.getCompName());
+			
 			coupDBDAO.createCoupon(newCoupon);
+			compDBDAO.addCoupon(currentCompany, newCoupon);
 		}catch(WaitingForConnectionInterrupted | FailedToCreateCouponException e)	{
 			System.out.println(e.getMessage() + ", failed to create coupon");
 		}
@@ -128,7 +130,9 @@ public class CompanyFacade implements ClientFacade {
 		try	{
 			currentCompany = compDBDAO.getCompany(currentCompany.getCompName());
 			ArrayList<Coupon> AllCouponsByType = (ArrayList<Coupon>) coupDBDAO.getCouponByType(type);
-			ArrayList<Coupon> companyCoupons = (ArrayList<Coupon>) currentCompany.getCoupons();
+			
+			ArrayList<Coupon> companyCoupons = (ArrayList<Coupon>) compDBDAO.getCoupons(currentCompany);
+	
 			CouponsByType = new ArrayList<Coupon>();
 			for (Coupon coupon : companyCoupons) {
 				if (AllCouponsByType.contains(coupon)) {
@@ -150,7 +154,7 @@ public class CompanyFacade implements ClientFacade {
 		{
 			currentCompany = compDBDAO.getCompany(currentCompany.getCompName());
 			ArrayList<Coupon> AllCouponsByDate = (ArrayList<Coupon>) coupDBDAO.getCouponTillDate(date);
-			ArrayList<Coupon> companyCoupons = (ArrayList<Coupon>) currentCompany.getCoupons();
+			ArrayList<Coupon> companyCoupons = (ArrayList<Coupon>) compDBDAO.getCoupons(currentCompany);
 			CouponsByDate = new ArrayList<Coupon>();
 			for (Coupon coupon : companyCoupons) 
 			{

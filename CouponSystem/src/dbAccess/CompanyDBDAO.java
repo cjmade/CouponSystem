@@ -14,29 +14,25 @@ public class CompanyDBDAO implements CompanyDAO {
 	ConnectionPool pool;
 
 	// Constructor, throws SQLException, on failed connection attempt
-	public CompanyDBDAO() throws DatabaseAccessError, SQLException 
-	{
+	public CompanyDBDAO() throws DatabaseAccessError, SQLException {
 		pool = ConnectionPool.getInstance();
 	}
+
 	// Creates new company, with unique name
 	@Override
-	public void createCompany(Company company) throws  WaitingForConnectionInterrupted, FailedToCreateCompanyException {
+	public void createCompany(Company company) throws WaitingForConnectionInterrupted, FailedToCreateCompanyException {
 		// Get connection
 		Connection connection;
-		try
-		{
+		try {
 			connection = pool.getConnection();
-		}catch(GetConnectionWaitInteruptedException e1)
-		{
+		} catch (GetConnectionWaitInteruptedException e1) {
 			throw new WaitingForConnectionInterrupted();
 		}
 
 		// Prepare SQL message to insert new company
-		String insertSQL = "INSERT INTO APP.Company "
-				+ "(EMAIL, PASSWORD, COMP_NAME, ID) VALUES" + "(?,?,?,?)";
+		String insertSQL = "INSERT INTO APP.Company " + "(EMAIL, PASSWORD, COMP_NAME, ID) VALUES" + "(?,?,?,?)";
 		PreparedStatement preparedStatement;
-		try
-		{
+		try {
 			preparedStatement = connection.prepareStatement(insertSQL);
 			preparedStatement.setString(1, company.getEmail());
 			preparedStatement.setString(2, company.getPassword());
@@ -46,42 +42,37 @@ public class CompanyDBDAO implements CompanyDAO {
 			preparedStatement.executeUpdate();
 			// Close statement connection
 			preparedStatement.close();
-		}catch(SQLException e)
-		{
+		} catch (SQLException e) {
 			throw new FailedToCreateCompanyException();
-		}
-		finally
-		{
+		} finally {
 			// close connection
 			pool.returnConnection(connection);
 		}
 		System.out.println(company.toString() + " was added to the table");
 	}
+
 	// Remove existing company
 	@Override
 	public void removeCompany(Company company) throws WaitingForConnectionInterrupted,
-		ClosedConnectionStatementCreationException, ConnectionCloseException 
-	{
+			ClosedConnectionStatementCreationException, ConnectionCloseException {
 		Connection connection;
-		try	{
+		try {
 			connection = pool.getConnection();
-		}catch(GetConnectionWaitInteruptedException e)	{
+		} catch (GetConnectionWaitInteruptedException e) {
 			throw new WaitingForConnectionInterrupted();
 		}
 		// Get company ID from DB
 		String sqlRequest;
 		Statement statement;
 		ResultSet idFound;
-		try
-		{
-			sqlRequest = "SELECT ID FROM APP.COMPANY WHERE COMP_NAME='"+ company.getCompName() + "'";
+		try {
+			sqlRequest = "SELECT ID FROM APP.COMPANY WHERE COMP_NAME='" + company.getCompName() + "'";
 			statement = connection.createStatement();
 			idFound = statement.executeQuery(sqlRequest);
 			idFound.next();
 			company.setId(idFound.getLong("ID"));
 			// Prepare message to remove purchase history
-			sqlRequest = "DELETE FROM APP.COMPANY_COUPON WHERE COMP_ID = "
-					+ company.getId();
+			sqlRequest = "DELETE FROM APP.COMPANY_COUPON WHERE COMP_ID = " + company.getId();
 			// Remove all customer purchase history
 			statement.execute(sqlRequest);
 			// Prepare SQL message to remove the company
@@ -89,71 +80,66 @@ public class CompanyDBDAO implements CompanyDAO {
 			// Remove the company himself
 			statement.execute(sqlRequest);
 			System.out.println(company.toString() + " was deleted");
-		}catch(SQLException e)	{
+		} catch (SQLException e) {
 			throw new ClosedConnectionStatementCreationException();
 		}
 		// Close connections
-		try
-		{
+		try {
 			idFound.close();
 			statement.close();
-		}catch(SQLException e)
-		{
+		} catch (SQLException e) {
 			throw new ConnectionCloseException();
 		}
 		pool.returnConnection(connection);
 	}
+
 	// Update existing company
 	@Override
-	public void updateCompany(Company company) 
-			throws NothingToUpdateException, WaitingForConnectionInterrupted, 
-					ClosedConnectionStatementCreationException, UpdateDidNotExecuteException {
+	public void updateCompany(Company company) throws NothingToUpdateException, WaitingForConnectionInterrupted,
+			ClosedConnectionStatementCreationException, UpdateDidNotExecuteException {
 		Connection connection;
 		Statement statement;
-		try{
+		try {
 			connection = pool.getConnection();
 			statement = connection.createStatement();
-		}catch(GetConnectionWaitInteruptedException e) {
+		} catch (GetConnectionWaitInteruptedException e) {
 			throw new WaitingForConnectionInterrupted();
-		}catch(SQLException e) {
+		} catch (SQLException e) {
 			throw new ClosedConnectionStatementCreationException();
-		}			
-			try	{
-				// Check that COMPANY with that name exists
-				statement.execute("SELECT COMP_NAME FROM APP.COMPANY WHERE COMP_NAME = '" + company.getCompName() + "'");
-			}catch(SQLException e)	{
-				// If such company does not exist - throw exception
-				throw new NothingToUpdateException();
-			}
+		}
+		try {
+			// Check that COMPANY with that name exists
+			statement.execute("SELECT COMP_NAME FROM APP.COMPANY WHERE COMP_NAME = '" + company.getCompName() + "'");
+		} catch (SQLException e) {
+			// If such company does not exist - throw exception
+			throw new NothingToUpdateException();
+		}
 
-			// Prepare SQL message to remove the company
-			String updateSQL = "UPDATE APP.COMPANY SET" + " COMP_NAME='"
-					+ company.getCompName() + "', PASSWORD='"
-					+ company.getPassword() + "', EMAIL='" + company.getEmail()
-					+ "' WHERE ID=" + company.getId();
-			try	{
-				// Remove the company
-				statement.execute(updateSQL);
-				System.out.println(company.toString() + " was updated");
-				// Close statement
-				statement.close();
-			}catch(SQLException e)	{
-				throw new UpdateDidNotExecuteException();
-			}
-			
-			pool.returnConnection(connection);
+		// Prepare SQL message to remove the company
+		String updateSQL = "UPDATE APP.COMPANY SET" + " COMP_NAME='" + company.getCompName() + "', PASSWORD='"
+				+ company.getPassword() + "', EMAIL='" + company.getEmail() + "' WHERE ID=" + company.getId();
+		try {
+			// Remove the company
+			statement.execute(updateSQL);
+			System.out.println(company.toString() + " was updated");
+			// Close statement
+			statement.close();
+		} catch (SQLException e) {
+			throw new UpdateDidNotExecuteException();
+		}
+
+		pool.returnConnection(connection);
 	}
+
 	// Returns Company by id
 	@Override
-	public Company getCompany(long id) throws WaitingForConnectionInterrupted, 
-		ClosedConnectionStatementCreationException, ConnectionCloseException {
+	public Company getCompany(long id) throws WaitingForConnectionInterrupted,
+			ClosedConnectionStatementCreationException, ConnectionCloseException {
 		// Establish db connection
 		Connection connection;
-		try
-		{
+		try {
 			connection = pool.getConnection();
-		}catch(GetConnectionWaitInteruptedException e)
-		{
+		} catch (GetConnectionWaitInteruptedException e) {
 			throw new WaitingForConnectionInterrupted();
 		}
 		// Prepare SQL message to get the company by the id
@@ -162,7 +148,7 @@ public class CompanyDBDAO implements CompanyDAO {
 		ResultSet rs;
 		Company company;
 		// Prepare and execute SELECT
-		try	{
+		try {
 			preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setLong(1, id);
 			// getting the values into a result set
@@ -173,76 +159,72 @@ public class CompanyDBDAO implements CompanyDAO {
 			company.setCompName(rs.getString("COMP_NAME"));
 			company.setPassword(rs.getString("PASSWORD"));
 			company.setEmail(rs.getString("EMAIL"));
-		}catch(SQLException e)	{
+		} catch (SQLException e) {
 			throw new ClosedConnectionStatementCreationException();
 		}
 		// Close Connections
-		try
-		{
+		try {
 			rs.close();
 			preparedStatement.close();
-		}catch(SQLException e)
-		{
+		} catch (SQLException e) {
 			throw new ConnectionCloseException();
 		}
 		pool.returnConnection(connection);
-		
+
 		return company;
 	}
+
 	@Override
-	public Company getCompany(String name) throws WaitingForConnectionInterrupted, 
-		ClosedConnectionStatementCreationException, ConnectionCloseException {
+	public Company getCompany(String name) throws WaitingForConnectionInterrupted,
+			ClosedConnectionStatementCreationException, ConnectionCloseException {
 		// Establish db connection
 		Connection connection;
-		try
-		{
+		try {
 			connection = pool.getConnection();
-		}catch(GetConnectionWaitInteruptedException e)
-		{
+		} catch (GetConnectionWaitInteruptedException e) {
 			throw new WaitingForConnectionInterrupted();
 		}
 		// Prepare SQL message to get the company by the id
-		String sql = "SELECT * FROM APP.COMPANY WHERE COMP_NAME = ?";
+		String sql = "SELECT * FROM APP.COMPANY WHERE COMP_NAME= ?";
 		PreparedStatement preparedStatement;
 		ResultSet rs;
 		Company company;
 		// Prepare and execute SELECT
-		try	{
+		try {
 			preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setString(1, name);
 			// getting the values into a result set
 			rs = preparedStatement.executeQuery();
 			company = new Company();
-			rs.next();
-			company.setId(rs.getLong("ID"));
-			company.setCompName(rs.getString("COMP_NAME"));
-			company.setPassword(rs.getString("PASSWORD"));
-			company.setEmail(rs.getString("EMAIL"));
-		}catch(SQLException e)	{
+			while (rs.next()) {
+				company.setId(rs.getLong("ID"));
+				company.setCompName(rs.getString("COMP_NAME"));
+				company.setPassword(rs.getString("PASSWORD"));
+				company.setEmail(rs.getString("EMAIL"));
+			}
+		} catch (SQLException e) {
 			throw new ClosedConnectionStatementCreationException();
 		}
 		// Close Connections
-		try
-		{
+		try {
 			rs.close();
 			preparedStatement.close();
-		}catch(SQLException e)
-		{
+		} catch (SQLException e) {
 			throw new ConnectionCloseException();
 		}
 		pool.returnConnection(connection);
-		
+
 		return company;
 	}
+
 	// Returns all existing companies
 	@Override
-	public Collection<Company> getAllCompanies() throws WaitingForConnectionInterrupted, 
-			ClosedConnectionStatementCreationException, ConnectionCloseException 
-	{
+	public Collection<Company> getAllCompanies() throws WaitingForConnectionInterrupted,
+			ClosedConnectionStatementCreationException, ConnectionCloseException {
 		Connection connection;
-		try	{
+		try {
 			connection = pool.getConnection();
-		}catch(GetConnectionWaitInteruptedException e)	{
+		} catch (GetConnectionWaitInteruptedException e) {
 			throw new WaitingForConnectionInterrupted();
 		}
 		// Find all companies IN DATABASE
@@ -251,8 +233,7 @@ public class CompanyDBDAO implements CompanyDAO {
 		ResultSet rs;
 		ArrayList<Company> companies;
 		// prepare and execute SELECT
-		try
-		{
+		try {
 			statement = connection.prepareStatement(sql);
 			rs = statement.executeQuery();
 			companies = new ArrayList<Company>();
@@ -265,39 +246,36 @@ public class CompanyDBDAO implements CompanyDAO {
 				companies.add(company);
 				System.out.println(company.toString());
 			}
-		}catch(SQLException e)
-		{
+		} catch (SQLException e) {
 			throw new ClosedConnectionStatementCreationException();
 		}
 
-		try
-		{
+		try {
 			rs.close();
 			statement.close();
-		}catch(SQLException e)
-		{
+		} catch (SQLException e) {
 			throw new ConnectionCloseException();
 		}
-		
+
 		pool.returnConnection(connection);
 		return companies;
 	}
+
 	// Return all coupons of a certain company
 	@Override
 	public Collection<Coupon> getCoupons(Company company) throws WaitingForConnectionInterrupted,
-		ClosedConnectionStatementCreationException, ConnectionCloseException
-	{
+			ClosedConnectionStatementCreationException, ConnectionCloseException {
 		Connection connection;
-		try	{
+		try {
 			connection = pool.getConnection();
-		}catch(GetConnectionWaitInteruptedException e)	{
+		} catch (GetConnectionWaitInteruptedException e) {
 			throw new WaitingForConnectionInterrupted();
 		}
 		Statement statement;
 		ArrayList<Coupon> coupons;
 		String sql;
 		ResultSet rs;
-		try	{
+		try {
 			statement = connection.createStatement();
 			coupons = new ArrayList<Coupon>();
 			// If company was received without ID - set ID
@@ -308,7 +286,7 @@ public class CompanyDBDAO implements CompanyDAO {
 				companySetFound.next();
 				company.setId(companySetFound.getLong("ID"));
 				companySetFound.close();
-			}	
+			}
 			// Find company by ID in JOIN TABLE IN DATABASE
 			sql = "SELECT * FROM (APP.COMPANY_COUPON inner join APP.COUPON on APP.COUPON.ID = APP.COMPANY_COUPON.COUPON_ID) "
 					+ "WHERE COMP_ID=" + company.getId();
@@ -329,35 +307,33 @@ public class CompanyDBDAO implements CompanyDAO {
 				System.out.println(coupon.toString());
 				coupons.add(coupon);
 			}
-		}catch(SQLException e)	{
+		} catch (SQLException e) {
 			throw new ClosedConnectionStatementCreationException();
 		}
-		try	{
+		try {
 			rs.close();
 			statement.close();
-		}catch(SQLException e)	{
+		} catch (SQLException e) {
 			throw new ConnectionCloseException();
 		}
 		pool.returnConnection(connection);
 		return coupons;
 	}
+
 	// Returns true on success, false on fail to Log In
 	@Override
-	public boolean login(String compName, String password) throws WaitingForConnectionInterrupted, 
-		ClosedConnectionStatementCreationException, ConnectionCloseException
-	{
+	public boolean login(String compName, String password) throws WaitingForConnectionInterrupted,
+			ClosedConnectionStatementCreationException, ConnectionCloseException {
 		Connection connection;
-		try
-		{
+		try {
 			connection = pool.getConnection();
-		}catch(GetConnectionWaitInteruptedException e)
-		{
+		} catch (GetConnectionWaitInteruptedException e) {
 			throw new WaitingForConnectionInterrupted();
 		}
 		Statement statement;
 		String sqlStatement;
 		ResultSet companyFound;
-		try	{
+		try {
 			statement = connection.createStatement();
 			// Find company by NAME in DATABASE
 			sqlStatement = "SELECT COMP_NAME,PASSWORD FROM APP.COMPANY WHERE COMP_NAME='" + compName + "'";
@@ -371,19 +347,51 @@ public class CompanyDBDAO implements CompanyDAO {
 				statement.close();
 				return true;
 			}
-		}catch(SQLException e)	{
+		} catch (SQLException e) {
 			throw new ClosedConnectionStatementCreationException();
 		}
 		// on invalid Login information - return false
-		try
-		{
+		try {
 			companyFound.close();
 			statement.close();
-		}catch(SQLException e)
-		{
+		} catch (SQLException e) {
 			throw new ConnectionCloseException();
 		}
 		pool.returnConnection(connection);
 		return false;
+	}
+
+	public void addCoupon(Company company, Coupon newCoupon) throws ClosedConnectionStatementCreationException,
+			WaitingForConnectionInterrupted, ConnectionCloseException {
+		// DB Connection
+		{
+			// DB Connection
+			Connection connection;
+			try {
+				connection = pool.getConnection();
+			} catch (GetConnectionWaitInteruptedException e) {
+				throw new WaitingForConnectionInterrupted();
+			}
+			// Prepare and execute SQL message to insert new company
+			String insertSQL = "INSERT INTO APP.COMPANY_COUPON " + "(COMP_ID, COUPON_ID) VALUES" + "(?,?)";
+			PreparedStatement preparedStatement;
+			try {
+				preparedStatement = connection.prepareStatement(insertSQL);
+				preparedStatement.setLong(1, company.getId());
+				preparedStatement.setLong(2, newCoupon.getId());
+				// Execute prepared Statement
+				preparedStatement.executeUpdate();
+				// preparedStatement.executeQuery();
+			} catch (SQLException e) {
+				throw new ClosedConnectionStatementCreationException();
+			}
+			// Close connections
+			try {
+				preparedStatement.close();
+			} catch (SQLException e) {
+				throw new ConnectionCloseException();
+			}
+			pool.returnConnection(connection);
+		}
 	}
 }

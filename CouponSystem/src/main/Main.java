@@ -29,20 +29,20 @@ public class Main
 		
 		Customer cust=new Customer("Shay");
 		//cust.setId(1);
-		Company comp= new Company();
-		comp.setId(4);
-		comp.setPassword("55");
-		comp.setCompName("shay");
+		///Company comp= new Company();
+		//comp.setId(4);
+		//comp.setPassword("55");
+		//comp.setCompName("shay");
 		
 		Coupon coup=new Coupon();
 		coup.setEndDate(java.sql.Date.valueOf("2015-08-08"));
 		coup.setAmount(4);
-		coup.setId(11);
+		coup.setId(7);
 		coup.setMessage("this is a coupon");
 		coup.setPrice(45.0);
 		coup.setStartDate(java.sql.Date.valueOf("2015-08-08"));
-		//coup.setTitle("co");
-		coup.setImage("jkjkj");
+		coup.setTitle("ababa");
+		coup.setImage("jkggjghkj");
 		coup.setType(CouponType.PETS);
 		//System.out.println(coup.toString());
 		//compFacade.createCoupon(coup);
@@ -53,11 +53,11 @@ public class Main
 		//custFacade.getAllPurchasedCouponsByPrice(33.0);
 		//custFacade.getAllPurchasedCouponsByType(CouponType.FOOD);
 		//custFacade.purchaseCoupon(coup);
-		//compFacade=(CompanyFacade) coupon.login("shayfass", "123456", "company");
-		compFacade.
-		//System.out.println(compFacade.getCouponByType(CouponType.PETS));
+		compFacade=(CompanyFacade) coupon.login("shayfass", "123456", "company");
+		//compFacade.createCoupon(coup);
+		compFacade.getCouponByType(CouponType.PETS);
 		//compFacade.getCouponTillDate(date);
-		admin.login("admin", "1234");
+		//admin.login("admin", "1234");
 		
 		//compFacade.
 
