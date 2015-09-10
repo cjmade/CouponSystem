@@ -11,9 +11,11 @@ import java.util.Collection;
 import exceptions.ClosedConnectionStatementCreationException;
 import exceptions.ConnectionCloseException;
 import exceptions.DatabaseAccessError;
+import exceptions.FailedToCreateCompanyException;
 import exceptions.WaitingForConnectionInterrupted;
 import exceptions.FailedToCreateCouponException;
 import exceptions.GetConnectionWaitInteruptedException;
+import objects.Company;
 import objects.Coupon;
 import objects.CouponType;
 
@@ -28,7 +30,7 @@ public class CouponDBDAO implements CouponDAO {
 	}
 
 	// Adds coupon to a coupons list
-	@Override
+	/*@Override
 	public void createCoupon(Coupon coupon) throws WaitingForConnectionInterrupted, 
 		ConnectionCloseException, FailedToCreateCouponException 
 	{
@@ -61,7 +63,8 @@ public class CouponDBDAO implements CouponDAO {
 					+ "', '"
 					+ coupon.getTitle()
 					+ "', '"
-					+ coupon.getId() + "')";
+					+ coupon.getId()
+					+ "')";
 			// Execute prepared Statement
 			statement.execute(insertSQL);
 			// LOG
@@ -77,6 +80,7 @@ public class CouponDBDAO implements CouponDAO {
 		}
 		pool.returnConnection(connection);
 	}
+	*/
 	// Removes relevant rows from CUSTOMER_COUPON, COMPANY_COUPON as well as coupon itself
 	@Override
 	public void removeCoupon(Coupon coupon) throws WaitingForConnectionInterrupted,
@@ -434,5 +438,46 @@ public class CouponDBDAO implements CouponDAO {
 		pool.returnConnection(connection);
 		// returns NULL, when no coupons found
 		return allCouponsFound;
+	}
+	@Override
+	public void createCoupon(Coupon coupon) throws FailedToCreateCouponException, WaitingForConnectionInterrupted  {
+		// Get connection
+		Connection connection;
+		try
+		{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e1)
+		{
+			throw new WaitingForConnectionInterrupted();
+		}
+
+		// Prepare SQL message to insert new company
+		String insertSQL = "INSERT INTO APP.COUPON (IMAGE,PRICE,MESSAGE,COUPON_TYPE,AMOUNT,END_DATE,START_DATE,TITLE) VALUES" + "(?,?,?,?,?,?,?,?)";
+		PreparedStatement preparedStatement;
+		try
+		{
+			preparedStatement = connection.prepareStatement(insertSQL);
+			preparedStatement.setInt(5, coupon.getAmount());
+			preparedStatement.setString(3, coupon.getMessage());
+			preparedStatement.setDouble(2, coupon.getPrice());
+			preparedStatement.setString(8, coupon.getTitle());
+			preparedStatement.setDate(6, (java.sql.Date) coupon.getEndDate());
+			preparedStatement.setDate(7, (java.sql.Date) coupon.getStartDate());
+			preparedStatement.setString(1, coupon.getImage());
+			preparedStatement.setString(4, coupon.getType().name());
+			
+			// Execute prepared Statement
+			preparedStatement.executeUpdate();
+			// Close statement connection
+			preparedStatement.close();
+		}catch(SQLException e)
+		{
+			throw new FailedToCreateCouponException();
+		}finally
+		{
+			// close connection
+			pool.returnConnection(connection);
+		}
+		System.out.println(coupon.toString() + " was added to the table");
 	}
 }

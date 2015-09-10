@@ -65,4 +65,14 @@ public class Company {
 				+ ", coupons=" + coupons 
 				+ "]";
 	}
+	@Override
+	public boolean equals(Object object) {
+		boolean flag = false;
+
+		if (object != null && object instanceof Company) {
+			flag = Company.id == ((Company) object).id;
+		}
+
+		return flag;
+	}
 }

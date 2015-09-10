@@ -49,7 +49,8 @@ public class CompanyDBDAO implements CompanyDAO {
 		}catch(SQLException e)
 		{
 			throw new FailedToCreateCompanyException();
-		}finally
+		}
+		finally
 		{
 			// close connection
 			pool.returnConnection(connection);
@@ -164,6 +165,51 @@ public class CompanyDBDAO implements CompanyDAO {
 		try	{
 			preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setLong(1, id);
+			// getting the values into a result set
+			rs = preparedStatement.executeQuery();
+			company = new Company();
+			rs.next();
+			company.setId(rs.getLong("ID"));
+			company.setCompName(rs.getString("COMP_NAME"));
+			company.setPassword(rs.getString("PASSWORD"));
+			company.setEmail(rs.getString("EMAIL"));
+		}catch(SQLException e)	{
+			throw new ClosedConnectionStatementCreationException();
+		}
+		// Close Connections
+		try
+		{
+			rs.close();
+			preparedStatement.close();
+		}catch(SQLException e)
+		{
+			throw new ConnectionCloseException();
+		}
+		pool.returnConnection(connection);
+		
+		return company;
+	}
+	@Override
+	public Company getCompany(String name) throws WaitingForConnectionInterrupted, 
+		ClosedConnectionStatementCreationException, ConnectionCloseException {
+		// Establish db connection
+		Connection connection;
+		try
+		{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e)
+		{
+			throw new WaitingForConnectionInterrupted();
+		}
+		// Prepare SQL message to get the company by the id
+		String sql = "SELECT * FROM APP.COMPANY WHERE COMP_NAME = ?";
+		PreparedStatement preparedStatement;
+		ResultSet rs;
+		Company company;
+		// Prepare and execute SELECT
+		try	{
+			preparedStatement = connection.prepareStatement(sql);
+			preparedStatement.setString(1, name);
 			// getting the values into a result set
 			rs = preparedStatement.executeQuery();
 			company = new Company();

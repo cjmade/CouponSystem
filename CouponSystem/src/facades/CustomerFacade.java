@@ -54,6 +54,7 @@ public class CustomerFacade implements ClientFacade {
 	// Purchase coupon
 	public void purchaseCoupon(Coupon coupon) {
 		try {
+			cust = custDBDAO.getCustomer(cust.getCustName());
 			custDBDAO.purchaseCoupon(cust, coupon);
 		} catch (Exception e) {
 			System.out.println(e.getMessage() + ", purchase failed");
@@ -67,6 +68,7 @@ public class CustomerFacade implements ClientFacade {
 		// check if there are coupons on the customer db and prints the correct
 		// massage
 		try {
+			cust = custDBDAO.getCustomer(cust.getCustName());
 			coupons = (ArrayList<Coupon>) custDBDAO.getCoupons(cust);
 			if (coupons.isEmpty()) {
 				System.out.println("You didn't buy any coupons yet");

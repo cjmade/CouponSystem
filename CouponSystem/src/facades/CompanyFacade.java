@@ -62,17 +62,18 @@ public class CompanyFacade implements ClientFacade {
 		return this;
 	}
 	// Create new coupon
-	private void createCoupon(Coupon newCoupon)
+	public void createCoupon(Coupon newCoupon) throws ConnectionCloseException, ClosedConnectionStatementCreationException
 	{
 		try	{
+			currentCompany = compDBDAO.getCompany(currentCompany.getCompName());
 			coupDBDAO.createCoupon(newCoupon);
-		}catch(WaitingForConnectionInterrupted | ConnectionCloseException
-				| FailedToCreateCouponException e)	{
+		}catch(WaitingForConnectionInterrupted | FailedToCreateCouponException e)	{
 			System.out.println(e.getMessage() + ", failed to create coupon");
-		}		
+		}
+		
 	}
 	// Removes coupon, if it exists
-	private void removeCoupon(Coupon coupon)
+	public void removeCoupon(Coupon coupon)
 	{
 		try	{
 			coupDBDAO.removeCoupon(coupon);
@@ -83,7 +84,7 @@ public class CompanyFacade implements ClientFacade {
 		}
 	}
 	// Update existing coupon
-	private void updateCoupon(Coupon coupon)
+	public void updateCoupon(Coupon coupon)
 	{
 		try	{
 			coupDBDAO.updateCoupon(coupon);
@@ -94,7 +95,7 @@ public class CompanyFacade implements ClientFacade {
 		}
 	}
 	// Find Coupon by id, in company's coupons
-	private Coupon getCoupon(int id) 
+	public Coupon getCoupon(int id) 
 	{
 		Coupon coupon = null;
 		try	{
@@ -107,10 +108,11 @@ public class CompanyFacade implements ClientFacade {
 		return coupon;
 	}
 	// Returns Collection<Coupon> of all existing coupons of the company
-	private Collection<Coupon> getAllCoupons() 
+	public Collection<Coupon> getAllCoupons() 
 	{
 		ArrayList<Coupon> allCoupons = null;
 		try	{
+			currentCompany = compDBDAO.getCompany(currentCompany.getCompName());
 			allCoupons = (ArrayList<Coupon>) compDBDAO.getCoupons(currentCompany);
 		}catch(WaitingForConnectionInterrupted
 				| ClosedConnectionStatementCreationException
@@ -124,6 +126,7 @@ public class CompanyFacade implements ClientFacade {
 	{
 		ArrayList<Coupon> CouponsByType = null;
 		try	{
+			currentCompany = compDBDAO.getCompany(currentCompany.getCompName());
 			ArrayList<Coupon> AllCouponsByType = (ArrayList<Coupon>) coupDBDAO.getCouponByType(type);
 			ArrayList<Coupon> companyCoupons = (ArrayList<Coupon>) currentCompany.getCoupons();
 			CouponsByType = new ArrayList<Coupon>();
@@ -145,6 +148,7 @@ public class CompanyFacade implements ClientFacade {
 		ArrayList<Coupon> CouponsByDate = null;
 		try
 		{
+			currentCompany = compDBDAO.getCompany(currentCompany.getCompName());
 			ArrayList<Coupon> AllCouponsByDate = (ArrayList<Coupon>) coupDBDAO.getCouponTillDate(date);
 			ArrayList<Coupon> companyCoupons = (ArrayList<Coupon>) currentCompany.getCoupons();
 			CouponsByDate = new ArrayList<Coupon>();

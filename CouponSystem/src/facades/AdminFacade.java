@@ -45,7 +45,7 @@ public class AdminFacade implements ClientFacade
 	}
 	// Create new company
 	@SuppressWarnings("unused")
-	private void createCompany(Company newCompany)
+	public void createCompany(Company newCompany)
 	{
 		try	{
 			compDBDAO.createCompany(newCompany);
@@ -55,7 +55,7 @@ public class AdminFacade implements ClientFacade
 	}
 	// Removes company and all its coupons, if company exists
 	@SuppressWarnings("unused")
-	private void removeCompany(Company company)
+	public void removeCompany(Company company)
 	{
 		try	{
 			compDBDAO.removeCompany(company);
@@ -66,7 +66,7 @@ public class AdminFacade implements ClientFacade
 	}
 	// Update existing company
 	@SuppressWarnings("unused")
-	private void updateCompany(Company company)
+	public void updateCompany(Company company)
 	{
 		try	{
 			compDBDAO.updateCompany(company);
@@ -90,7 +90,7 @@ public class AdminFacade implements ClientFacade
 	}
 	// Returns Collection<Company> of all existing companies
 	@SuppressWarnings("unused")
-	private Collection<Company> getAllCompanies()
+	public Collection<Company> getAllCompanies()
 	{
 		ArrayList<Company> allCompanies = null;
 		try	{
@@ -115,7 +115,7 @@ public class AdminFacade implements ClientFacade
 	}
 	// Removes customer and all his coupons, if exists
 	@SuppressWarnings("unused")
-	private void removeCustomer(Customer customer)
+	public void removeCustomer(Customer customer)
 	{
 		try	{
 			custDBDAO.removeCustomer(customer);
@@ -127,7 +127,7 @@ public class AdminFacade implements ClientFacade
 	}
 	// Update existing customer
 	@SuppressWarnings("unused")
-	private void updateCustomer(Customer customer)
+	public void updateCustomer(Customer customer)
 	{
 		try	{
 			custDBDAO.updateCustomer(customer);
@@ -139,7 +139,7 @@ public class AdminFacade implements ClientFacade
 	}
 	// Find Customer by id
 	@SuppressWarnings("unused")
-	private Customer getCustomer(int id)
+	public Customer getCustomer(int id)
 	{
 		Customer customer = null;
 		try	{
@@ -153,7 +153,7 @@ public class AdminFacade implements ClientFacade
 	}
 	// Returns Collection<Customer> of all existing customers
 	@SuppressWarnings("unused")
-	private Collection<Customer> getAllCustomers()
+	public Collection<Customer> getAllCustomers()
 	{
 		ArrayList<Customer> allCustomers = null;
 		try
