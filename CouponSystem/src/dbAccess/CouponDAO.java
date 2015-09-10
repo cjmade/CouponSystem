@@ -1,5 +1,6 @@
 package dbAccess;
 
+import java.sql.SQLException;
 import java.util.Collection;
 
 import exceptions.ClosedConnectionStatementCreationException;
@@ -19,4 +20,6 @@ public interface CouponDAO
 	Collection<Coupon> getCouponByType(CouponType couponType) throws WaitingForConnectionInterrupted, ClosedConnectionStatementCreationException, ConnectionCloseException ;
 	Collection<Coupon> getCouponByPrice(double price) throws WaitingForConnectionInterrupted, ClosedConnectionStatementCreationException, ConnectionCloseException  ;
 	Collection<Coupon> getCouponTillDate(String date) throws WaitingForConnectionInterrupted, ClosedConnectionStatementCreationException, ConnectionCloseException ;
+	Coupon getCoupon(String title) throws WaitingForConnectionInterrupted, ClosedConnectionStatementCreationException,
+			ConnectionCloseException, SQLException;
 }

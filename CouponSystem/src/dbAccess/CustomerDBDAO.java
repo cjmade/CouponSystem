@@ -186,7 +186,7 @@ public class CustomerDBDAO implements CustomerDAO
 			statement = connection.createStatement();
 			customerFound = new Customer();
 			// Find customer with ID
-			customerSetFound = statement.executeQuery("SELECT ID, CUST_NAME, PASSWORD FROM APP.CUSTOMER WHERE ID=" + id);
+			customerSetFound = statement.executeQuery("SELECT ID, CUST_NAME, PASSWORD FROM APP.CUSTOMER WHERE ID='"+id + "'");
 			// Store customer
 			customerSetFound.next();
 			//customerFound = (Customer)customerSetFound;

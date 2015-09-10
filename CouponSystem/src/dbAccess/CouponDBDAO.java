@@ -193,7 +193,7 @@ public class CouponDBDAO implements CouponDAO {
 		try	{
 			statement = connection.createStatement();
 			// Prepare SQL message to get the Coupon by the id
-			sql = "SELECT * FROM APP.COUPON WHERE ID="+id;
+			sql = "SELECT * FROM APP.COUPON WHERE ID='"+id + "'";
 			// getting the values into a result set
 			rs = statement.executeQuery(sql);
 			coupon = new Coupon();
@@ -212,6 +212,55 @@ public class CouponDBDAO implements CouponDAO {
 		}catch(SQLException e)	{
 			throw new ClosedConnectionStatementCreationException();
 		}
+		// Close connections
+		try	{
+			rs.close();
+			statement.close();
+		}catch(SQLException e)	{
+			throw new ConnectionCloseException();
+		}
+		pool.returnConnection(connection);
+		return coupon;
+	}
+	@Override
+	public Coupon getCoupon(String title) throws WaitingForConnectionInterrupted, 
+		ClosedConnectionStatementCreationException, ConnectionCloseException, SQLException 
+	{
+		Connection connection;
+		try
+		{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e)
+		{
+			throw new WaitingForConnectionInterrupted();
+		}
+		// Prepare and execute coupon
+		Statement statement;
+		ResultSet rs;
+		String sql;
+		Coupon coupon = null;;
+	//	try	{
+			statement = connection.createStatement();
+			// Prepare SQL message to get the Coupon by the id
+			sql = "SELECT * FROM APP.COUPON WHERE TITLE='"+title + "'";
+			// getting the values into a result set
+			rs = statement.executeQuery(sql);
+			coupon = new Coupon();
+			if(rs.next())
+			{
+				coupon.setAmount(rs.getInt("AMOUNT"));
+				coupon.setId(rs.getLong("ID"));
+				coupon.setImage(rs.getString("IMAGE"));
+				coupon.setMessage(rs.getString("MESSAGE"));
+				coupon.setPrice(rs.getDouble("PRICE"));
+				coupon.setTitle(rs.getString("TITLE"));
+				coupon.setEndDate(rs.getDate("END_DATE"));
+				coupon.setStartDate(rs.getDate("START_DATE"));
+				coupon.setType(CouponType.valueOf(rs.getString("COUPON_TYPE")));
+			}
+		//}catch(SQLException e)	{
+		//	throw new ClosedConnectionStatementCreationException();
+		//}
 		// Close connections
 		try	{
 			rs.close();
