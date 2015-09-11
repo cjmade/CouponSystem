@@ -18,7 +18,7 @@ public class CompanyFacade implements ClientFacade
 	// Constructor
 	public CompanyFacade() throws DatabaseAccessError 
 	{
-		// Instantiate db connections
+		// Instantiate DB connections
 		try
 		{
 			coupDBDAO = new CouponDBDAO();
@@ -56,13 +56,14 @@ public class CompanyFacade implements ClientFacade
 		ClosedConnectionStatementCreationException
 	{
 		try	{
-			currentCompany = compDBDAO.getCompany(currentCompany.getCompName());
+			// Provide vewCoupon id if it came without
+			if(newCoupon.getId() == 0)
+			{
+				newCoupon = coupDBDAO.getCoupon(newCoupon.getTitle());
+			}
+			compDBDAO.addCoupon(currentCompany, newCoupon);
 			
-			coupDBDAO.createCoupon(newCoupon);
-			Coupon coup=new Coupon();
-			coup=coupDBDAO.getCoupon(newCoupon.getTitle());
-			compDBDAO.addCoupon(currentCompany, coup);
-		}catch(WaitingForConnectionInterrupted | FailedToCreateCouponException e)	{
+		}catch(WaitingForConnectionInterrupted e)	{
 			System.out.println(e.getMessage() + ", failed to create coupon");
 		}
 		
