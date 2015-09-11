@@ -35,7 +35,8 @@ public class Coupon {
 	}
 
 	public void setTitle(String title) {
-		this.title = title;
+		if(title != null)
+			this.title = title;
 	}
 
 	public Date getStartDate() {
@@ -96,19 +97,23 @@ public class Coupon {
 
 	@Override
 	public String toString() {
-		return "Coupon [" + "id=" + id + ", title=" + title + ", startDate=" + startDate + ", endDate=" + endDate
-				+ ", amount=" + amount + ", type=" + type + ", message=" + message + ", price=" + price + "]";
+		return "Coupon [" 
+				+ "id=" + id 
+				+ ", title=" + title 
+				+ ", startDate=" + startDate 
+				+ ", endDate=" + endDate
+				+ ", amount=" + amount 
+				+ ", type=" + type 
+				+ ", message=" + message 
+				+ ", price=" + price 
+				+ "]";
 	}
-
 	@Override
 	public boolean equals(Object object) {
-		boolean flag = false;
-
 		if (object != null && object instanceof Coupon) {
-			flag = this.id == ((Coupon) object).id;
+			return (this.getId() == ((Coupon) object).getId());
 		}
-
-		return flag;
+		return false;
 	}
 
 }

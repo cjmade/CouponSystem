@@ -30,13 +30,15 @@ public class Customer {
 		return custName;
 	}
 	public void setCustName(String custName) {
-		this.custName = custName;
+		if(custName != null)
+			this.custName = custName;
 	}
 	public String getPassword() {
 		return password;
 	}
 	public void setPassword(String password) {
-		this.password = password;
+		if(password != null)
+			this.password = password;
 	}
 	public ArrayList<Coupon> getCoupons() {
 		return coupons;
@@ -52,5 +54,13 @@ public class Customer {
 				+ ", password="	+ password 
 				+ ", coupons=" + coupons 
 				+ "]";
+	}
+	@Override
+	public boolean equals(Object object)
+	{
+		if (object != null && object instanceof Customer) {
+			return (this.getId() == ((Customer)object).getId());
+		}
+		return false;
 	}
 }

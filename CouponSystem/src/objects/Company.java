@@ -7,7 +7,7 @@ import java.util.Collection;
 
 public class Company {
 	// Attributes
-	private static long id;
+	private long id;
 	private String compName;
 	private String password;
 	private String email;
@@ -25,9 +25,7 @@ public class Company {
 		return id;
 	}
 	public void setId(long id) {
-		if (id>0) {
-			Company.id = id++;
-		}
+		this.id = id;
 	}
 	public String getCompName() {
 		return compName;
@@ -41,13 +39,17 @@ public class Company {
 		return password;
 	}
 	public void setPassword(String password) {
-		this.password = password;
+		if (password != null) {
+			this.password = password;
+		}
 	}
 	public String getEmail() {
 		return email;
 	}
 	public void setEmail(String email) {
-		this.email = email;
+		if (email != null) {
+			this.email = email;
+		}
 	}
 	public Collection<Coupon> getCoupons()   {
 		return coupons;
@@ -67,12 +69,9 @@ public class Company {
 	}
 	@Override
 	public boolean equals(Object object) {
-		boolean flag = false;
-
 		if (object != null && object instanceof Company) {
-			flag = Company.id == ((Company) object).id;
+			return (this.getId() == ((Company)object).getId());
 		}
-
-		return flag;
+		return false;
 	}
 }
