@@ -148,10 +148,7 @@ public class CustomerDBDAO implements CustomerDAO
 		// Provide Coupon Id, if it does not have one
 		String sqlMessage;
 		PreparedStatement preparedStatement;
-		ResultSet couponFound;
 		try	{
-			// Set coupon ID TODO
-			couponFound = null;
 			// Prepare and execute SQL message to insert new company
 			sqlMessage = "INSERT INTO APP.CUSTOMER_COUPON " + "(CUST_ID, COUPON_ID) VALUES" + "(?,?)";
 			preparedStatement = connection.prepareStatement(sqlMessage);
