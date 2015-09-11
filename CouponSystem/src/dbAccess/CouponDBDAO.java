@@ -52,7 +52,6 @@ public class CouponDBDAO implements CouponDAO {
 			preparedStatement.setDate(7, (java.sql.Date) coupon.getStartDate());
 			preparedStatement.setString(1, coupon.getImage());
 			preparedStatement.setString(4, coupon.getType().name());
-			
 			// Execute prepared Statement
 			preparedStatement.executeUpdate();
 			// Close statement connection
