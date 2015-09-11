@@ -56,7 +56,9 @@ public class CustomerFacade implements ClientFacade {
 	// Purchase coupon
 	public void purchaseCoupon(Coupon coupon) {
 		try {
-			currentCustomer = custDBDAO.getCustomer(currentCustomer.getCustName());
+			// Ensure coupon has an ID
+			coupon = coupDBDAO.getCoupon(coupon.getTitle());
+			// Purchase
 			custDBDAO.purchaseCoupon(currentCustomer, coupon);
 		} catch (Exception e) {
 			System.out.println(e.getMessage() + ", purchase failed");
