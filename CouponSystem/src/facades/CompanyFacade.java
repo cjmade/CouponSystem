@@ -56,7 +56,7 @@ public class CompanyFacade implements ClientFacade
 		ClosedConnectionStatementCreationException
 	{
 		try	{
-			// Provide vewCoupon id if it came without
+			// Provide newCoupon id if it came without it
 			if(newCoupon.getId() == 0)
 			{
 				newCoupon = coupDBDAO.getCoupon(newCoupon.getTitle());
