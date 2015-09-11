@@ -21,7 +21,7 @@ public class CouponDBDAO implements CouponDAO {
 	// Connection attributes
 	ConnectionPool pool;
 
-	// Constructor, throws SQLException, on failed connection attempt
+	// Constructor, throws Exception, on failed connection attempt
 	public CouponDBDAO() throws DatabaseAccessError {
 		pool = ConnectionPool.getInstance();
 	}
@@ -208,6 +208,7 @@ public class CouponDBDAO implements CouponDAO {
 		pool.returnConnection(connection);
 		return coupon;
 	}
+	// Returns coupon by Title
 	@Override
 	public Coupon getCoupon(String title) throws WaitingForConnectionInterrupted, 
 		ClosedConnectionStatementCreationException, ConnectionCloseException 
