@@ -362,36 +362,34 @@ public class CompanyDBDAO implements CompanyDAO {
 	}
 
 	public void addCoupon(Company company, Coupon newCoupon) throws ClosedConnectionStatementCreationException,
-			WaitingForConnectionInterrupted, ConnectionCloseException {
+			WaitingForConnectionInterrupted, ConnectionCloseException 
+	{
 		// DB Connection
-		{
-			// DB Connection
-			Connection connection;
-			try {
-				connection = pool.getConnection();
-			} catch (GetConnectionWaitInteruptedException e) {
-				throw new WaitingForConnectionInterrupted();
-			}
-			// Prepare and execute SQL message to insert new company
-			String insertSQL = "INSERT INTO APP.COMPANY_COUPON " + "(COMP_ID, COUPON_ID) VALUES" + "(?,?)";
-			PreparedStatement preparedStatement;
-			try {
-				preparedStatement = connection.prepareStatement(insertSQL);
-				preparedStatement.setLong(1, company.getId());
-				preparedStatement.setLong(2, newCoupon.getId());
-				// Execute prepared Statement
-				preparedStatement.executeUpdate();
-				// preparedStatement.executeQuery();
-			} catch (SQLException e) {
-				throw new ClosedConnectionStatementCreationException();
-			}
-			// Close connections
-			try {
-				preparedStatement.close();
-			} catch (SQLException e) {
-				throw new ConnectionCloseException();
-			}
-			pool.returnConnection(connection);
+		Connection connection;
+		try {
+			connection = pool.getConnection();
+		} catch (GetConnectionWaitInteruptedException e) {
+			throw new WaitingForConnectionInterrupted();
 		}
+		// Prepare and execute SQL message to insert new company
+		String insertSQL = "INSERT INTO APP.COMPANY_COUPON " + "(COMP_ID, COUPON_ID) VALUES" + "(?,?)";
+		PreparedStatement preparedStatement;
+		try {
+			preparedStatement = connection.prepareStatement(insertSQL);
+			preparedStatement.setLong(1, company.getId());
+			preparedStatement.setLong(2, newCoupon.getId());
+			// Execute prepared Statement
+			preparedStatement.executeUpdate();
+			// preparedStatement.executeQuery();
+		} catch (SQLException e) {
+			throw new ClosedConnectionStatementCreationException();
+		}
+		// Close connections
+		try {
+			preparedStatement.close();
+		} catch (SQLException e) {
+			throw new ConnectionCloseException();
+		}
+		pool.returnConnection(connection);
 	}
 }

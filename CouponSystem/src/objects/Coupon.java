@@ -17,7 +17,6 @@ public class Coupon {
 	// Constructors
 	public Coupon() {
 	}
-
 	public Coupon(String title) {
 		this.setTitle(title);
 	}

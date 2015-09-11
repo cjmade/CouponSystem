@@ -1,8 +1,6 @@
 package dbAccess;
 
-import java.sql.SQLException;
 import java.util.Collection;
-
 import exceptions.ClosedConnectionStatementCreationException;
 import exceptions.ConnectionCloseException;
 import exceptions.WaitingForConnectionInterrupted;
