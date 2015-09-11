@@ -19,7 +19,6 @@ public interface CompanyDAO {
 	Collection<Company> getAllCompanies() throws WaitingForConnectionInterrupted, ClosedConnectionStatementCreationException, ConnectionCloseException;
 	Collection<Coupon> getCoupons(Company company) throws WaitingForConnectionInterrupted, ClosedConnectionStatementCreationException, ConnectionCloseException;
 	boolean login(String compName,String password) throws WaitingForConnectionInterrupted, ClosedConnectionStatementCreationException, ConnectionCloseException;
-	Company getCompany(String name) throws WaitingForConnectionInterrupted, ClosedConnectionStatementCreationException,
-			ConnectionCloseException;
+	Company getCompany(String name) throws WaitingForConnectionInterrupted, ClosedConnectionStatementCreationException, ConnectionCloseException;
 
 }

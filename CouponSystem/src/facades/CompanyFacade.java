@@ -1,9 +1,7 @@
 package facades;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-
 import objects.*;
 import dbAccess.*;
 import exceptions.*;
@@ -25,7 +23,7 @@ public class CompanyFacade implements ClientFacade
 		{
 			coupDBDAO = new CouponDBDAO();
 			compDBDAO = new CompanyDBDAO();
-		}catch(SQLException e)
+		}catch(DatabaseAccessError e)
 		{
 			System.out.println(e.getMessage() + ", failed to connect");
 		}
@@ -54,7 +52,8 @@ public class CompanyFacade implements ClientFacade
 		return null;
 	}
 	// Create new coupon
-	public void createCoupon(Coupon newCoupon) throws ConnectionCloseException, ClosedConnectionStatementCreationException, SQLException
+	public void createCoupon(Coupon newCoupon) throws ConnectionCloseException, 
+		ClosedConnectionStatementCreationException
 	{
 		try	{
 			currentCompany = compDBDAO.getCompany(currentCompany.getCompName());

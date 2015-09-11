@@ -16,7 +16,7 @@ public class CustomerDBDAO implements CustomerDAO
 	// Connection attributes
 	ConnectionPool pool;
 	// Constructor, throws SQLException, on failed connection attempt
-	public CustomerDBDAO() throws DatabaseAccessError, SQLException
+	public CustomerDBDAO() throws DatabaseAccessError
 	{
 		pool = ConnectionPool.getInstance();
 	}
@@ -145,11 +145,16 @@ public class CustomerDBDAO implements CustomerDAO
 		}catch(GetConnectionWaitInteruptedException e)	{
 			throw new WaitingForConnectionInterrupted();
 		}
-		// Prepare and execute SQL message to insert new company
-		String insertSQL = "INSERT INTO APP.CUSTOMER_COUPON " + "(CUST_ID, COUPON_ID) VALUES" + "(?,?)";
+		// Provide Coupon Id, if it does not have one
+		String sqlMessage;
 		PreparedStatement preparedStatement;
+		ResultSet couponFound;
 		try	{
-			preparedStatement = connection.prepareStatement(insertSQL);
+			// Set coupon ID TODO
+			couponFound = null;
+			// Prepare and execute SQL message to insert new company
+			sqlMessage = "INSERT INTO APP.CUSTOMER_COUPON " + "(CUST_ID, COUPON_ID) VALUES" + "(?,?)";
+			preparedStatement = connection.prepareStatement(sqlMessage);
 			preparedStatement.setLong(1, customer.getId());
 			preparedStatement.setLong(2, coupon.getId());
 			// Execute prepared Statement
@@ -165,7 +170,7 @@ public class CustomerDBDAO implements CustomerDAO
 		}
 		pool.returnConnection(connection);
 	}
-	// Finds and returns customer from DB by ID
+	// Returns customer by ID
 	@Override
 	public Customer getCustomer(long id) throws WaitingForConnectionInterrupted, 
 		ClosedConnectionStatementCreationException, ConnectionCloseException
@@ -193,6 +198,48 @@ public class CustomerDBDAO implements CustomerDAO
 			customerFound.setId(id);
 			customerFound.setCustName(customerSetFound.getString("CUST_NAME"));
 			customerFound.setPassword(customerSetFound.getString("PASSWORD"));
+		}catch(SQLException e)	{
+			throw new ClosedConnectionStatementCreationException();
+		}
+		// Close connections
+		try	{
+			customerSetFound.close();
+			statement.close();
+		}catch(SQLException e)	{
+			throw new ConnectionCloseException();
+		}
+		pool.returnConnection(connection);
+		// Return it
+		return customerFound;
+	}
+	// Returns Customer by Name
+	public Customer getCustomer(String name) throws WaitingForConnectionInterrupted, 
+	ClosedConnectionStatementCreationException, ConnectionCloseException
+	{
+		// DB Connection
+		Connection connection;
+		try	{
+			connection = pool.getConnection();
+		}catch(GetConnectionWaitInteruptedException e)	{
+			throw new WaitingForConnectionInterrupted();
+		}
+		// Prepare and execute statement
+		Statement statement;
+		// Create new customer to store what will be found
+		Customer customerFound;
+		ResultSet customerSetFound;
+		try	{
+			statement = connection.createStatement();
+			customerFound = new Customer();
+			// Find customer with ID
+			customerSetFound = statement.executeQuery("SELECT * FROM APP.CUSTOMER WHERE CUST_NAME= '" + name+"'");
+			// Store customer
+			customerSetFound.next();
+			//customerFound = (Customer)customerSetFound;
+			customerFound.setId(customerSetFound.getLong("ID"));
+			customerFound.setCustName(name);
+			customerFound.setPassword(customerSetFound.getString("PASSWORD"));
+			customerFound.setCoupons((ArrayList<Coupon>) getCoupons(customerFound));
 		}catch(SQLException e)	{
 			throw new ClosedConnectionStatementCreationException();
 		}
@@ -360,51 +407,4 @@ public class CustomerDBDAO implements CustomerDAO
 		// 
 		return loginSuccess;
 	}
-	// Get Client's Id by Name
-	public Customer getCustomerByName(String name)
-	{
-		Customer customer = null;
-		// TODO
-		return customer;
-	}
-	
-	public Customer getCustomer(String name) throws WaitingForConnectionInterrupted, 
-	ClosedConnectionStatementCreationException, ConnectionCloseException
-{
-	// DB Connection
-	Connection connection;
-	try	{
-		connection = pool.getConnection();
-	}catch(GetConnectionWaitInteruptedException e)	{
-		throw new WaitingForConnectionInterrupted();
-	}
-	// Prepare and execute statement
-	Statement statement;
-	// Create new customer to store what will be found
-	Customer customerFound;
-	ResultSet customerSetFound;
-	try	{
-		statement = connection.createStatement();
-		customerFound = new Customer();
-		// Find customer with ID
-		customerSetFound = statement.executeQuery("SELECT ID, CUST_NAME, PASSWORD FROM APP.CUSTOMER WHERE CUST_NAME= '" + name+"'");
-		// Store customer
-		customerSetFound.next();
-		//customerFound = (Customer)customerSetFound;
-		customerFound.setId(customerSetFound.getLong("ID"));
-		customerFound.setCustName(name);
-		customerFound.setPassword(customerSetFound.getString("PASSWORD"));
-	}catch(SQLException e)	{
-		throw new ClosedConnectionStatementCreationException();
-	}
-	// Close connections
-	try	{
-		customerSetFound.close();
-		statement.close();
-	}catch(SQLException e)	{
-		throw new ConnectionCloseException();
-	}
-	pool.returnConnection(connection);
-	// Return it
-	return customerFound;
-}}
+}

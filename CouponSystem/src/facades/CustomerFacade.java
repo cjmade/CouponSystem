@@ -1,10 +1,7 @@
 package facades;
 
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
-
 import objects.CouponType;
 import objects.Customer;
 import objects.Coupon;
@@ -17,7 +14,7 @@ import exceptions.WaitingForConnectionInterrupted;
 
 public class CustomerFacade implements ClientFacade {
 	// Save Customer Data
-	private Customer cust;
+	private Customer currentCustomer;
 	// Create Data Base connections:
 	// CustomerDBDAO is only used to read customers
 	private CustomerDBDAO custDBDAO;
@@ -25,12 +22,12 @@ public class CustomerFacade implements ClientFacade {
 	private CouponDBDAO coupDBDAO;
 
 	// Constructor
-	public CustomerFacade() throws SQLException {
+	public CustomerFacade() 
+	{
 		// Instantiate db connections
 		try {
 			custDBDAO = new CustomerDBDAO();
 			coupDBDAO = new CouponDBDAO();
-			cust = new Customer();
 		} catch (DatabaseAccessError e) {
 			System.out.println(e.getMessage() + ", connection attempt failed");
 		}
@@ -40,22 +37,27 @@ public class CustomerFacade implements ClientFacade {
 	// Login
 	@Override
 	public ClientFacade login(String name, String password) {
+		// Validate login
 		try {
+			// On successful login set currentCustomer data, return facade
 			if (custDBDAO.login(name, password)) {
-				this.cust = new Customer(name);
+				this.currentCustomer = custDBDAO.getCustomer(name);
+				return this;
 			}
-		} catch (WaitingForConnectionInterrupted | ClosedConnectionStatementCreationException
+		} catch (WaitingForConnectionInterrupted 
+				| ClosedConnectionStatementCreationException
 				| ConnectionCloseException e) {
-			System.out.println(e.getMessage() + ", login attempt failed");
+			System.out.println(e.getMessage() + ", login failed");
 		}
-		return this;
+		// On invalid login
+		return null;
 	}
 
 	// Purchase coupon
 	public void purchaseCoupon(Coupon coupon) {
 		try {
-			cust = custDBDAO.getCustomer(cust.getCustName());
-			custDBDAO.purchaseCoupon(cust, coupon);
+			currentCustomer = custDBDAO.getCustomer(currentCustomer.getCustName());
+			custDBDAO.purchaseCoupon(currentCustomer, coupon);
 		} catch (Exception e) {
 			System.out.println(e.getMessage() + ", purchase failed");
 		}
@@ -68,8 +70,8 @@ public class CustomerFacade implements ClientFacade {
 		// check if there are coupons on the customer db and prints the correct
 		// massage
 		try {
-			cust = custDBDAO.getCustomer(cust.getCustName());
-			coupons = (ArrayList<Coupon>) custDBDAO.getCoupons(cust);
+			currentCustomer = custDBDAO.getCustomer(currentCustomer.getCustName());
+			coupons = (ArrayList<Coupon>) custDBDAO.getCoupons(currentCustomer);
 			if (coupons.isEmpty()) {
 				System.out.println("You didn't buy any coupons yet");
 				return;
@@ -91,8 +93,8 @@ public class CustomerFacade implements ClientFacade {
 		try {
 			ArrayList<Coupon> AllCouponsByType = (ArrayList<Coupon>) coupDBDAO.getCouponByType(type);
 			// get the list for all coupons for this customer
-			cust = custDBDAO.getCustomer(cust.getCustName());
-			ArrayList<Coupon> customerCoupons = (ArrayList<Coupon>) custDBDAO.getCoupons(cust);
+			currentCustomer = custDBDAO.getCustomer(currentCustomer.getCustName());
+			ArrayList<Coupon> customerCoupons = (ArrayList<Coupon>) custDBDAO.getCoupons(currentCustomer);
 			// new list for for all coupons from the same type for this customer
 			CouponsByType = new ArrayList<Coupon>();
 			for (Coupon coupon : customerCoupons) {
@@ -117,8 +119,8 @@ public class CustomerFacade implements ClientFacade {
 		try {
 			AllCouponsByPrice = (ArrayList<Coupon>) coupDBDAO.getCouponByPrice(price);
 			// get the list for all coupons for this customer
-			cust = custDBDAO.getCustomer(cust.getCustName());
-			ArrayList<Coupon> customerCoupons = (ArrayList<Coupon>) custDBDAO.getCoupons(cust);
+			currentCustomer = custDBDAO.getCustomer(currentCustomer.getCustName());
+			ArrayList<Coupon> customerCoupons = (ArrayList<Coupon>) custDBDAO.getCoupons(currentCustomer);
 			// new list for for all coupons from the same price for this
 			// customer
 			CouponsByPrice = new ArrayList<Coupon>();
