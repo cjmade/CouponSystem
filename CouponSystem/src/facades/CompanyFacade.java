@@ -8,10 +8,10 @@ import objects.*;
 import dbAccess.*;
 import exceptions.*;
 
-@SuppressWarnings("unused")
-public class CompanyFacade implements ClientFacade {
+public class CompanyFacade implements ClientFacade 
+{
 	// Prepare company to store for a session
-	private Company currentCompany = new Company();
+	private Company currentCompany;
 	// CouponDBDAO to manipulate coupons
 	private CouponDBDAO coupDBDAO;
 	// CompanyDBDAO to add to COMPANY_COUPON
@@ -34,32 +34,24 @@ public class CompanyFacade implements ClientFacade {
 	// Login method, on successful login returns ClientFacade object
 	// or throws an exception
 	@Override
-	public ClientFacade login(String name, String password) throws DatabaseAccessError {
-		// TODO
-		// Check if company with this name exists
-		ArrayList<Company> allCompanies = null;
-		try	{
-			allCompanies = (ArrayList<Company>) compDBDAO.getAllCompanies();
-			// Look for login information in DB
-			for (Company existingCompany : allCompanies) {
-				// If such company exist and password is right - return CompanyFacade
-				if (existingCompany.getCompName().equals(name)
-						&& existingCompany.getPassword().equals(password)) 
-				{
-					// Store Company data for a session
-					currentCompany.setId((new Company(name)).getId());
-					currentCompany.setCompName(name);
-					currentCompany.setPassword(password);
-					break;
-				}
+	public ClientFacade login(String name, String password) throws DatabaseAccessError 
+	{
+		try
+		{
+			// sets currentCompany data and returns the facade on success
+			if(compDBDAO.login(name, password))
+			{
+				this.currentCompany = compDBDAO.getCompany(name);
+				return this;
 			}
 		}catch(WaitingForConnectionInterrupted
 				| ClosedConnectionStatementCreationException
-				| ConnectionCloseException e)	{
-			System.out.println(e.getMessage() + ", login attempt failed because of error");
+				| ConnectionCloseException e1)
+		{
+			System.out.println(e1.getMessage() + ", login failed");
 		}
-		// Return facade or null
-		return this;
+		// on invalid login
+		return null;
 	}
 	// Create new coupon
 	public void createCoupon(Coupon newCoupon) throws ConnectionCloseException, ClosedConnectionStatementCreationException, SQLException

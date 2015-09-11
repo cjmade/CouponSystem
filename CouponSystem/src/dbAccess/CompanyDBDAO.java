@@ -159,6 +159,7 @@ public class CompanyDBDAO implements CompanyDAO {
 			company.setCompName(rs.getString("COMP_NAME"));
 			company.setPassword(rs.getString("PASSWORD"));
 			company.setEmail(rs.getString("EMAIL"));
+			company.setCoupons((ArrayList<Coupon>) getCoupons(company));
 		} catch (SQLException e) {
 			throw new ClosedConnectionStatementCreationException();
 		}
@@ -173,7 +174,7 @@ public class CompanyDBDAO implements CompanyDAO {
 
 		return company;
 	}
-
+	// Returns Company by Name
 	@Override
 	public Company getCompany(String name) throws WaitingForConnectionInterrupted,
 			ClosedConnectionStatementCreationException, ConnectionCloseException {
@@ -201,6 +202,7 @@ public class CompanyDBDAO implements CompanyDAO {
 				company.setCompName(rs.getString("COMP_NAME"));
 				company.setPassword(rs.getString("PASSWORD"));
 				company.setEmail(rs.getString("EMAIL"));
+				company.setCoupons((ArrayList<Coupon>) getCoupons(company));
 			}
 		} catch (SQLException e) {
 			throw new ClosedConnectionStatementCreationException();
@@ -323,8 +325,10 @@ public class CompanyDBDAO implements CompanyDAO {
 	// Returns true on success, false on fail to Log In
 	@Override
 	public boolean login(String compName, String password) throws WaitingForConnectionInterrupted,
-			ClosedConnectionStatementCreationException, ConnectionCloseException {
+			ClosedConnectionStatementCreationException, ConnectionCloseException 
+	{
 		Connection connection;
+		boolean loginSuccess = false;
 		try {
 			connection = pool.getConnection();
 		} catch (GetConnectionWaitInteruptedException e) {
@@ -341,11 +345,10 @@ public class CompanyDBDAO implements CompanyDAO {
 			// If company wasn't found - next() will throw EOFException
 			companyFound.next();
 			// Check the password, return true on success
-			if (companyFound.getString("PASSWORD").equals(password)) {
-				pool.returnConnection(connection);
-				companyFound.close();
-				statement.close();
-				return true;
+			if (companyFound.getString("PASSWORD").equals(password)) 
+			{
+				// login details are valid
+				loginSuccess = true;
 			}
 		} catch (SQLException e) {
 			throw new ClosedConnectionStatementCreationException();
@@ -358,7 +361,7 @@ public class CompanyDBDAO implements CompanyDAO {
 			throw new ConnectionCloseException();
 		}
 		pool.returnConnection(connection);
-		return false;
+		return loginSuccess;
 	}
 
 	public void addCoupon(Company company, Coupon newCoupon) throws ClosedConnectionStatementCreationException,
