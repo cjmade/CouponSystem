@@ -291,7 +291,7 @@ public class CouponDBDAO implements CouponDAO {
 				coupon.setTitle(rs.getString("TITLE"));
 				coupon.setStartDate(rs.getDate("START_DATE"));
 				coupons.add(coupon);
-				System.out.println(coupon.toString());
+				//System.out.println(coupon.toString());
 				coupons.add(coupon);
 			}
 		}catch(SQLException e)	{

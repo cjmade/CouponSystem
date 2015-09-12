@@ -53,12 +53,13 @@ public class CompanyFacade implements ClientFacade
 	}
 	// Create new coupon
 	public void createCoupon(Coupon newCoupon) throws ConnectionCloseException, 
-		ClosedConnectionStatementCreationException
+		ClosedConnectionStatementCreationException, FailedToCreateCouponException
 	{
 		try	{
 			// Provide newCoupon id if it came without it
 			if(newCoupon.getId() == 0)
 			{
+			coupDBDAO.createCoupon(newCoupon);
 				newCoupon = coupDBDAO.getCoupon(newCoupon.getTitle());
 			}
 			compDBDAO.addCoupon(currentCompany, newCoupon);

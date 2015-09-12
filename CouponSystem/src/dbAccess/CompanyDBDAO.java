@@ -30,14 +30,13 @@ public class CompanyDBDAO implements CompanyDAO {
 		}
 
 		// Prepare SQL message to insert new company
-		String insertSQL = "INSERT INTO APP.Company " + "(EMAIL, PASSWORD, COMP_NAME, ID) VALUES" + "(?,?,?,?)";
+		String insertSQL = "INSERT INTO APP.Company " + "(EMAIL, PASSWORD, COMP_NAME) VALUES" + "(?,?,?)";
 		PreparedStatement preparedStatement;
 		try {
 			preparedStatement = connection.prepareStatement(insertSQL);
 			preparedStatement.setString(1, company.getEmail());
 			preparedStatement.setString(2, company.getPassword());
 			preparedStatement.setString(3, company.getCompName());
-			preparedStatement.setLong(4, company.getId());
 			// Execute prepared Statement
 			preparedStatement.executeUpdate();
 			// Close statement connection
@@ -306,8 +305,7 @@ public class CompanyDBDAO implements CompanyDAO {
 				coupon.setStartDate(rs.getDate("START_DATE"));
 				coupon.setType(CouponType.valueOf(rs.getString("COUPON_TYPE")));
 				coupons.add(coupon);
-				System.out.println(coupon.toString());
-				coupons.add(coupon);
+				
 			}
 		} catch (SQLException e) {
 			throw new ClosedConnectionStatementCreationException();
@@ -383,7 +381,6 @@ public class CompanyDBDAO implements CompanyDAO {
 			preparedStatement.setLong(2, newCoupon.getId());
 			// Execute prepared Statement
 			preparedStatement.executeUpdate();
-			// preparedStatement.executeQuery();
 		} catch (SQLException e) {
 			throw new ClosedConnectionStatementCreationException();
 		}
