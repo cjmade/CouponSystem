@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class Customer {
 	// Customer Attributes
-	// id is assigned automatically at writing to db
+	// id is assigned by DB on insert
 	private long id;
 	private String custName = null;
 	private String password = null;

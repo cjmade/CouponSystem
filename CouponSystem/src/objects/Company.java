@@ -7,6 +7,7 @@ import java.util.Collection;
 
 public class Company {
 	// Attributes
+	// id is assigned by DB on insert
 	private long id;
 	private String compName;
 	private String password;

@@ -4,6 +4,7 @@ import java.util.Date;
 
 public class Coupon {
 	// Attributes
+	// id is assigned by DB on insert
 	private long id;
 	private String title;
 	private Date startDate;
