@@ -73,8 +73,7 @@ public class AdminFacade implements ClientFacade
 		}
 	}
 	// Find Company by id
-	@SuppressWarnings("unused")
-	private Company getCompany(int id)
+	public Company getCompany(int id)
 	{
 		Company company = null;
 		try	{
@@ -98,8 +97,7 @@ public class AdminFacade implements ClientFacade
 		return allCompanies;
 	}
 	// Create new Customer
-	@SuppressWarnings("unused")
-	private void createCustomer(Customer newCustomer)
+	public void createCustomer(Customer newCustomer)
 	{
 		try	{
 			custDBDAO.createCustomer(newCustomer);

@@ -12,60 +12,75 @@ import threads.DailyCouponExpirationTask;
 import dbAccess.*; 
 import facades.*;
 
-// comment
+// This is the Test class
 public class Main
 {
 	
 	
 	public static void main(String[] args) throws Exception
 	{	
-		CouponDBDAO coupDB = new CouponDBDAO();
-		CustomerDBDAO custDB=new CustomerDBDAO();
-		CompanyDBDAO compDB=new CompanyDBDAO();
-		
+		// Prepare facades
 		CustomerFacade custFacade = new CustomerFacade();
-		CompanyFacade compFacade=new CompanyFacade();
-		AdminFacade admin=new AdminFacade();
+		CompanyFacade compFacade = new CompanyFacade();
+		AdminFacade admin = new AdminFacade();
 		
-		Customer cust=new Customer("Shay");
-		cust.setId(2);
-		Company comp= new Company("shay");
-		//comp.setId(2);
-		comp.setPassword("123456");
-		comp.setEmail("shay");
-		//comp.setCompName("shay");
+		// Prepare Company and Customer
+		Company company = new Company("FirstCompany");
+		company.setPassword("123456");
+		company.setEmail("thecompany@gmail.com");
+		Customer customer = new Customer("Shay");
+		customer.setPassword("9876");
 		
-		Coupon coup=new Coupon();
-		coup.setEndDate(java.sql.Date.valueOf("2015-08-08"));
-		coup.setAmount(4);
-		coup.setId(1);
-		coup.setMessage("this is a coupon");
-		coup.setPrice(45.0);
-		coup.setStartDate(java.sql.Date.valueOf("2015-08-08"));
-		coup.setTitle("shayshay");
-		coup.setImage("jkggjghkj");
-		coup.setType(CouponType.PETS);
-		//System.out.println(coup.toString());
-		//compFacade.createCoupon(coup);
-		//coupDB.createCoupon(coup);
-		CouponSystem coupon= CouponSystem.getInstance();
-		//custFacade=(CustomerFacade) coupon.login("shayfass", "123456", "customer");
-		//custFacade.getAllPurchasedCoupons();
-		//custFacade.getAllPurchasedCouponsByPrice(33.0);
-		//custFacade.getAllPurchasedCouponsByType(CouponType.FOOD);
-		//custFacade.purchaseCoupon(coup);
-		//compFacade=(CompanyFacade) coupon.login("shay", "123456", "company");
-		//compFacade.createCoupon(coup);
-		//System.out.println(compFacade.getCouponByType(CouponType.PETS));
-		//compFacade.removeCoupon(coup);
+		// Prepare Coupon
+		Coupon coupon = new Coupon();
+		coupon.setEndDate(java.sql.Date.valueOf("2015-08-08"));
+		coupon.setAmount(4);
+		coupon.setMessage("this is a coupon");
+		coupon.setPrice(45.0);
+		coupon.setStartDate(java.sql.Date.valueOf("2015-08-08"));
+		coupon.setTitle("FirstCoupon");
+		coupon.setImage("jkggjghkj");
+		coupon.setType(CouponType.PETS);
 		
-		//compFacade.getCouponTillDate(date);
-		admin.login("admin", "1234");
-		//admin.removeCompany(comp);
-		admin.createCompany(comp);
-		//compFacade.
-
-
+		// Login into Admin Facade - on fail prints message, stops program
+		if((admin = (AdminFacade) admin.login("admin", "1234")) != null)
+		{
+			// Create Company and Customer - add them to DB
+			admin.createCompany(company);
+			admin.createCustomer(customer);
+			System.out.println("Company and Customer created");
+		}
+		else
+		{
+			System.out.println("Admin Login Failed");
+			return;
+		}
+		
+		// Login into Company Facade - on fail prints message, stops program
+		if((compFacade = (CompanyFacade) compFacade.login(company.getCompName(), company.getPassword())) != null)
+		{
+			// Create coupon - add to DB
+			compFacade.createCoupon(coupon);
+			System.out.println("Coupon created");
+		}
+		else
+		{
+			System.out.println("Company Login Failed");
+			return;
+		}
+		
+		// Login into Customer - on fail prints message, stops program
+		if((custFacade = (CustomerFacade) custFacade.login(customer.getCustName(), customer.getPassword())) != null)
+		{
+			// Purchase coupon
+			custFacade.purchaseCoupon(coupon);
+			System.out.println("Coupon purchased by the customer");
+		}
+		else
+		{
+			System.out.println("Customer Login Failed");
+			return;
+		}
 		
 		
 		

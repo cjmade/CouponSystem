@@ -136,7 +136,7 @@ public class CustomerDBDAO implements CustomerDAO
 	}
 	// Purchase coupon
 	public void purchaseCoupon(Customer customer, Coupon coupon) throws WaitingForConnectionInterrupted, 
-		ClosedConnectionStatementCreationException, ConnectionCloseException
+		ClosedConnectionStatementCreationException, ConnectionCloseException, CouponSoldOutException
 	{
 		// DB Connection
 		Connection connection;
@@ -145,22 +145,48 @@ public class CustomerDBDAO implements CustomerDAO
 		}catch(GetConnectionWaitInteruptedException e)	{
 			throw new WaitingForConnectionInterrupted();
 		}
-		// Provide Coupon Id, if it does not have one
 		String sqlMessage;
-		PreparedStatement preparedStatement;
-		try	{
-			// Prepare and execute SQL message to insert new company
-			sqlMessage = "INSERT INTO APP.CUSTOMER_COUPON " + "(CUST_ID, COUPON_ID) VALUES" + "(?,?)";
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+		long couponId = coupon.getId();
+		int amountLeft = 0;
+		// Check coupon availability
+		try
+		{
+			sqlMessage = "SELECT AMOUNT FROM APP.COUPON WHERE ID = " + couponId;
 			preparedStatement = connection.prepareStatement(sqlMessage);
-			preparedStatement.setLong(1, customer.getId());
-			preparedStatement.setLong(2, coupon.getId());
-			// Execute prepared Statement
-			preparedStatement.executeUpdate();
-		}catch(SQLException e)	{
+			resultSet = preparedStatement.executeQuery(sqlMessage);
+			resultSet.next();
+			amountLeft = resultSet.getInt(1);
+		}catch(SQLException e1)
+		{
 			throw new ClosedConnectionStatementCreationException();
 		}
+		// if there are coupons available - purchase
+		if(amountLeft > 1)
+		{
+			try	
+			{
+				// Prepare and execute SQL message to insert new company
+				sqlMessage = "INSERT INTO APP.CUSTOMER_COUPON " + "(CUST_ID, COUPON_ID) VALUES" + "(?,?)";
+				preparedStatement.setLong(1, customer.getId());
+				preparedStatement.setLong(2, couponId);
+				// Execute prepared Statement
+				preparedStatement.executeUpdate();
+				// Decrease AMOUNT of available coupons by 1
+				sqlMessage = "UPDATE APP.COUPON SET AMOUNT=" + (amountLeft - 1) + " WHERE ID=" + couponId;
+				preparedStatement.executeUpdate(sqlMessage);
+			}catch(SQLException e)	{
+				throw new ClosedConnectionStatementCreationException();
+			}
+		}
+		else  // throw exception
+			{
+				throw new CouponSoldOutException();
+			}
 		// Close connections
 		try	{
+			resultSet.close();
 			preparedStatement.close();
 		}catch(SQLException e)	{
 			throw new ConnectionCloseException();
