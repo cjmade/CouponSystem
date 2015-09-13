@@ -82,7 +82,9 @@ public class CompanyFacade implements ClientFacade
 	public void updateCoupon(Coupon coupon)
 	{
 		try	{
-			coupon = coupDBDAO.getCoupon(coupon.getTitle());
+			Coupon couponTemp =new Coupon();
+			couponTemp=coupDBDAO.getCoupon(coupon.getTitle());
+			coupon.setId(couponTemp.getId());
 			coupDBDAO.updateCoupon(coupon);
 		}catch(WaitingForConnectionInterrupted
 				| ClosedConnectionStatementCreationException

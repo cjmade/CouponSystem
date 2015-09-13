@@ -130,7 +130,7 @@ public class CouponDBDAO implements CouponDAO {
 		try	{
 			// Prepare SQL message to remove the Coupon
 			String updateSQL = "UPDATE APP.COUPON SET "
-					+ "AMOUNT=?,  MESSAGE=?, PRICE=?, TITLE=?, END_DATE=?, START_DATE=?, IMAGE=?,COUPON_TYPE=? "
+					+ "AMOUNT=?,MESSAGE=?,PRICE=?,TITLE=?,END_DATE=?,START_DATE=?,IMAGE=?,COUPON_TYPE=? "
 					+ "WHERE ID=?";
 			// Prepare statement
 			preparedStatement = connection.prepareStatement(updateSQL);
