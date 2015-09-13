@@ -1,22 +1,11 @@
 package main;
 
-
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-
 import objects.*;
-import system.CouponSystem;
-import threads.DailyCouponExpirationTask;
-import dbAccess.*; 
 import facades.*;
 
 // This is the Test class
 public class Main
 {
-	
-	
 	public static void main(String[] args) throws Exception
 	{	
 		// Prepare facades
@@ -33,11 +22,11 @@ public class Main
 		
 		// Prepare Coupon
 		Coupon coupon = new Coupon();
-		coupon.setEndDate(java.sql.Date.valueOf("2015-08-08"));
+		coupon.setEndDate(java.sql.Date.valueOf("2015-12-01"));
 		coupon.setAmount(4);
 		coupon.setMessage("this is a coupon");
 		coupon.setPrice(45.0);
-		coupon.setStartDate(java.sql.Date.valueOf("2015-08-08"));
+		coupon.setStartDate(java.sql.Date.valueOf("2015-09-13"));
 		coupon.setTitle("FirstCoupon");
 		coupon.setImage("jkggjghkj");
 		coupon.setType(CouponType.PETS);
@@ -81,10 +70,10 @@ public class Main
 			System.out.println("Customer Login Failed");
 			return;
 		}
-		
-		
+				
+		// Update Coupon
+		coupon.setEndDate(java.sql.Date.valueOf("2016-01-01"));
+		compFacade.updateCoupon(coupon);
 		
 	}
-	}	
-	
-
+}

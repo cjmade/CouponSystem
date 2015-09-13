@@ -55,13 +55,14 @@ public class CompanyFacade implements ClientFacade
 	public void createCoupon(Coupon newCoupon) throws ConnectionCloseException, 
 		ClosedConnectionStatementCreationException, FailedToCreateCouponException
 	{
+		Coupon coupon;
 		try	{
 			// Create coupon
 			coupDBDAO.createCoupon(newCoupon);
 			// Provide coupon ID from DB
-			newCoupon = coupDBDAO.getCoupon(newCoupon.getTitle());
+			coupon = coupDBDAO.getCoupon(newCoupon.getTitle());
 			// Add coupon to Company's coupons list
-			compDBDAO.addCoupon(currentCompany, newCoupon);
+			compDBDAO.addCoupon(currentCompany, coupon);
 		}catch(WaitingForConnectionInterrupted e)	{
 			System.out.println(e.getMessage() + ", failed to create coupon");
 		}
@@ -81,6 +82,7 @@ public class CompanyFacade implements ClientFacade
 	public void updateCoupon(Coupon coupon)
 	{
 		try	{
+			coupon = coupDBDAO.getCoupon(coupon.getTitle());
 			coupDBDAO.updateCoupon(coupon);
 		}catch(WaitingForConnectionInterrupted
 				| ClosedConnectionStatementCreationException

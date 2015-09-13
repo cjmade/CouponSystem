@@ -129,19 +129,20 @@ public class CouponDBDAO implements CouponDAO {
 		// Prepare and execute the update
 		try	{
 			// Prepare SQL message to remove the Coupon
-			String updateSQL = "UPDATE APP.COUPON SET AMOUNT=?, ID=?,  MESSAGE=?, PRICE=?, TITLE=?, END_DATE=?, START_DATE=?, IMAGE=?,COUPON_TYPE=?  WHERE ID=?";
+			String updateSQL = "UPDATE APP.COUPON SET "
+					+ "AMOUNT=?,  MESSAGE=?, PRICE=?, TITLE=?, END_DATE=?, START_DATE=?, IMAGE=?,COUPON_TYPE=? "
+					+ "WHERE ID=?";
 			// Prepare statement
 			preparedStatement = connection.prepareStatement(updateSQL);
 			preparedStatement.setInt(1, coupon.getAmount());
-			preparedStatement.setLong(2, coupon.getId());
-			preparedStatement.setString(3, coupon.getMessage());
-			preparedStatement.setDouble(4, coupon.getPrice());
-			preparedStatement.setString(5, coupon.getTitle());
-			preparedStatement.setDate(6, (java.sql.Date) coupon.getEndDate());
-			preparedStatement.setDate(7, (java.sql.Date) coupon.getStartDate());
-			preparedStatement.setString(8, coupon.getImage());
-			preparedStatement.setString(9, coupon.getType().name());
-			preparedStatement.setLong(10, coupon.getId());
+			preparedStatement.setString(2, coupon.getMessage());
+			preparedStatement.setDouble(3, coupon.getPrice());
+			preparedStatement.setString(4, coupon.getTitle());
+			preparedStatement.setDate(5, (java.sql.Date) coupon.getEndDate());
+			preparedStatement.setDate(6, (java.sql.Date) coupon.getStartDate());
+			preparedStatement.setString(7, coupon.getImage());
+			preparedStatement.setString(8, coupon.getType().name());
+			preparedStatement.setLong(9, coupon.getId());
 			// update the Coupon
 			preparedStatement.execute();
 			// Log

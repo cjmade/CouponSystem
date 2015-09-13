@@ -33,7 +33,7 @@ public class CustomerDBDAO implements CustomerDAO
 			throw new WaitingForConnectionInterrupted();
 		}
 		// Prepare SQL message to insert new company
-		String insertSQL = "INSERT INTO APP.CUSTOMER " + "(PASSWORD, COMP_NAME) VALUES" + "(?,?)";
+		String insertSQL = "INSERT INTO APP.CUSTOMER " + "(PASSWORD, CUST_NAME) VALUES" + "(?,?)";
 		PreparedStatement preparedStatement;
 		// Prepare statement and update 
 		try	{
@@ -146,16 +146,16 @@ public class CustomerDBDAO implements CustomerDAO
 			throw new WaitingForConnectionInterrupted();
 		}
 		String sqlMessage;
-		PreparedStatement preparedStatement = null;
+		PreparedStatement preparedStatement;
+		Statement statement;
 		ResultSet resultSet = null;
-		long couponId = coupon.getId();
 		int amountLeft = 0;
 		// Check coupon availability
 		try
 		{
-			sqlMessage = "SELECT AMOUNT FROM APP.COUPON WHERE ID = " + couponId;
-			preparedStatement = connection.prepareStatement(sqlMessage);
-			resultSet = preparedStatement.executeQuery(sqlMessage);
+			sqlMessage = "SELECT AMOUNT FROM APP.COUPON WHERE ID = " + coupon.getId();
+			statement = connection.createStatement();
+			resultSet = statement.executeQuery(sqlMessage);
 			resultSet.next();
 			amountLeft = resultSet.getInt(1);
 		}catch(SQLException e1)
@@ -165,17 +165,19 @@ public class CustomerDBDAO implements CustomerDAO
 		// if there are coupons available - purchase
 		if(amountLeft > 1)
 		{
+			amountLeft--;
 			try	
 			{
 				// Prepare and execute SQL message to insert new company
 				sqlMessage = "INSERT INTO APP.CUSTOMER_COUPON " + "(CUST_ID, COUPON_ID) VALUES" + "(?,?)";
+				preparedStatement = connection.prepareStatement(sqlMessage);
 				preparedStatement.setLong(1, customer.getId());
-				preparedStatement.setLong(2, couponId);
+				preparedStatement.setLong(2, coupon.getId());
 				// Execute prepared Statement
 				preparedStatement.executeUpdate();
 				// Decrease AMOUNT of available coupons by 1
-				sqlMessage = "UPDATE APP.COUPON SET AMOUNT=" + (amountLeft - 1) + " WHERE ID=" + couponId;
-				preparedStatement.executeUpdate(sqlMessage);
+				sqlMessage = "UPDATE APP.COUPON SET AMOUNT=" + amountLeft + " WHERE ID=" + coupon.getId();
+				statement.executeUpdate(sqlMessage);
 			}catch(SQLException e)	{
 				throw new ClosedConnectionStatementCreationException();
 			}
@@ -186,6 +188,7 @@ public class CustomerDBDAO implements CustomerDAO
 			}
 		// Close connections
 		try	{
+			statement.close();
 			resultSet.close();
 			preparedStatement.close();
 		}catch(SQLException e)	{
