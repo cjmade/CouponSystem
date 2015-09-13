@@ -32,7 +32,6 @@ public class CustomerFacade implements ClientFacade {
 			System.out.println(e.getMessage() + ", connection attempt failed");
 		}
 	}
-
 	// Methods
 	// Login
 	@Override
@@ -82,12 +81,12 @@ public class CustomerFacade implements ClientFacade {
 			for (Coupon coupon : coupons) {
 				System.out.println(coupon.toString());
 			}
-		} catch (WaitingForConnectionInterrupted | ClosedConnectionStatementCreationException
+		} catch (WaitingForConnectionInterrupted 
+				| ClosedConnectionStatementCreationException
 				| ConnectionCloseException e) {
 			System.out.println(e.getMessage() + ", failed to get purchased coupons");
 		}
 	}
-
 	// Returns all coupons of a certain type, purchased by the customer
 	public Collection<Coupon> getAllPurchasedCouponsByType(CouponType type) {
 		// get the list for all coupons from this type
@@ -105,14 +104,14 @@ public class CustomerFacade implements ClientFacade {
 					CouponsByType.add(coupon);
 				}
 			}
-		} catch (WaitingForConnectionInterrupted | ClosedConnectionStatementCreationException
+		} catch (WaitingForConnectionInterrupted 
+				| ClosedConnectionStatementCreationException
 				| ConnectionCloseException e) {
 			System.out.println(e.getMessage() + ", failed to get coupons");
 		}
 		System.out.println(CouponsByType.toString());
 		return CouponsByType;
 	}
-
 	// Returns Collection of coupons purchased by customer
 	public Collection<Coupon> getAllPurchasedCouponsByPrice(double price) {
 		ArrayList<Coupon> CouponsByPrice = null;
@@ -131,7 +130,8 @@ public class CustomerFacade implements ClientFacade {
 					CouponsByPrice.add(coupon);
 				}
 			}
-		} catch (WaitingForConnectionInterrupted | ClosedConnectionStatementCreationException
+		} catch (WaitingForConnectionInterrupted 
+				| ClosedConnectionStatementCreationException
 				| ConnectionCloseException e) {
 			System.out.println(e.getMessage() + ", failed to get coupons");
 		}
