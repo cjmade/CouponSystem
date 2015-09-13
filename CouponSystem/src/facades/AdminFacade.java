@@ -44,7 +44,6 @@ public class AdminFacade implements ClientFacade
 		return this;
 	}
 	// Create new company
-	@SuppressWarnings("unused")
 	public void createCompany(Company newCompany)
 	{
 		try	{
@@ -54,7 +53,6 @@ public class AdminFacade implements ClientFacade
 		}
 	}
 	// Removes company and all its coupons, if company exists
-	@SuppressWarnings("unused")
 	public void removeCompany(Company company)
 	{
 		try	{
@@ -65,7 +63,6 @@ public class AdminFacade implements ClientFacade
 		}
 	}
 	// Update existing company
-	@SuppressWarnings("unused")
 	public void updateCompany(Company company)
 	{
 		try	{
@@ -89,7 +86,6 @@ public class AdminFacade implements ClientFacade
 		return company;
 	}
 	// Returns Collection<Company> of all existing companies
-	@SuppressWarnings("unused")
 	public Collection<Company> getAllCompanies()
 	{
 		ArrayList<Company> allCompanies = null;
@@ -114,7 +110,6 @@ public class AdminFacade implements ClientFacade
 
 	}
 	// Removes customer and all his coupons, if exists
-	@SuppressWarnings("unused")
 	public void removeCustomer(Customer customer)
 	{
 		try	{
@@ -126,7 +121,6 @@ public class AdminFacade implements ClientFacade
 		}
 	}
 	// Update existing customer
-	@SuppressWarnings("unused")
 	public void updateCustomer(Customer customer)
 	{
 		try	{
@@ -138,7 +132,6 @@ public class AdminFacade implements ClientFacade
 		}
 	}
 	// Find Customer by id
-	@SuppressWarnings("unused")
 	public Customer getCustomer(int id)
 	{
 		Customer customer = null;
@@ -152,7 +145,6 @@ public class AdminFacade implements ClientFacade
 		return customer;
 	}
 	// Returns Collection<Customer> of all existing customers
-	@SuppressWarnings("unused")
 	public Collection<Customer> getAllCustomers()
 	{
 		ArrayList<Customer> allCustomers = null;
