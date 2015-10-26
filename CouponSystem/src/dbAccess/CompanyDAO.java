@@ -9,6 +9,7 @@ import exceptions.NothingToUpdateException;
 import exceptions.UpdateDidNotExecuteException;
 import objects.Company;
 import objects.Coupon;
+import objects.*;
 
 public interface CompanyDAO {
 	
