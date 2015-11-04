@@ -35,13 +35,12 @@ public class AdminFacade implements ClientFacade
 	public ClientFacade login(String name, String password) throws DatabaseAccessError
 	{
 		// If username/password wrong - throw exception
-		if(name != "admin" || password != "1234")
+		if(name.equals("admin") && password.equals("1234"))
 		{
-			System.out.println("Wrong user/passowrd combination, try again");
-			return null;
+			return this;
 		}
-		// else - create and return new Facade Object
-		return this;
+		System.out.println("Wrong user/passowrd combination, try again");
+		return null;
 	}
 	// Create new company
 	public void createCompany(Company newCompany)
